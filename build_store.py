@@ -12,6 +12,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       box-sizing: border-box;
       margin: 0;
       padding: 0;
+      user-select: none;
     }
     body {
       background: url('bliss.jpg') no-repeat center center fixed;
@@ -22,17 +23,22 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       justify-content: center;
       align-items: center;
       min-height: 100vh;
+      overflow: hidden;
       padding: 10px;
     }
     .wmp-window {
       width: 100%;
-      max-width: 900px;
+      max-width: 880px;
       background: linear-gradient(to bottom, #d6dfef 0%, #b0c4de 100%);
       border: 3px solid;
       border-color: #ffffff #7190b9 #7190b9 #ffffff;
-      box-shadow: 4px 4px 15px rgba(0,0,0,0.4);
+      box-shadow: 6px 6px 20px rgba(0,0,0,0.5);
       border-radius: 4px;
       overflow: hidden;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
     }
     .wmp-titlebar {
       background: linear-gradient(to right, #0055ea 0%, #3d8bff 50%, #0055ea 100%);
@@ -44,6 +50,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       justify-content: space-between;
       align-items: center;
       text-shadow: 1px 1px #002366;
+      cursor: move;
     }
     .wmp-window-controls span {
       background: #d6dfef;
@@ -72,13 +79,19 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     }
     .wmp-body {
       display: grid;
-      grid-template-columns: 180px 1fr 220px;
+      grid-template-columns: 170px 1fr 220px;
       background: #fff;
       border-top: 1px solid #7190b9;
       border-bottom: 1px solid #7190b9;
       min-height: 380px;
     }
     @media (max-width: 768px) {
+      .wmp-window {
+        position: relative;
+        top: 0;
+        left: 0;
+        transform: none;
+      }
       .wmp-body {
         grid-template-columns: 1fr;
       }
@@ -113,13 +126,13 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       color: #0055ea;
     }
     .wmp-main {
-      padding: 12px;
+      padding: 10px;
       background: #fff;
       display: flex;
       flex-direction: column;
       gap: 8px;
       overflow-y: auto;
-      max-height: 420px;
+      max-height: 400px;
     }
     .search-bar {
       width: 100%;
@@ -127,6 +140,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       font-size: 11px;
       border: 1px solid #7190b9;
       background: #fff;
+      outline: none;
+      user-select: text;
     }
     .track-row {
       display: flex;
@@ -141,7 +156,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       background-color: #eef3fc;
     }
     .track-row.active {
-      background-color: #3d8bff;
+      background-color: #0055ea;
       color: white;
     }
     .track-info {
@@ -152,14 +167,15 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     .mini-play-btn {
       background: linear-gradient(to bottom, #f9f9f9 0%, #dcdcdc 100%);
       border: 1px solid #707070;
-      width: 20px;
-      height: 20px;
+      width: 18px;
+      height: 18px;
       font-size: 9px;
       cursor: pointer;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
+      color: #000;
     }
     .track-actions {
       display: flex;
@@ -235,11 +251,12 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     .wmp-btn {
       background: linear-gradient(to bottom, #f9f9f9 0%, #dcdcdc 100%);
       border: 1px solid #707070;
-      padding: 3px 8px;
+      padding: 4px 10px;
       font-size: 11px;
       cursor: pointer;
       font-weight: bold;
       border-radius: 2px;
+      min-width: 28px;
     }
     .wmp-btn:active {
       background: linear-gradient(to bottom, #dcdcdc 0%, #f9f9f9 100%);
@@ -259,8 +276,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 </head>
 <body>
 
-  <div class="wmp-window">
-    <div class="wmp-titlebar">
+  <div class="wmp-window" id="wmpWindow">
+    <div class="wmp-titlebar" id="wmpHeader">
       <span>Windows Media Player &mdash; Outtamnd Beat Catalog</span>
       <div class="wmp-window-controls">
         <span>_</span><span>&#x25A1;</span><span>&times;</span>
@@ -298,12 +315,12 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
     <!-- Bottom Controls Footer -->
     <div class="wmp-footer">
-      <audio id="audioPlayer"></audio>
+      <audio id="audioPlayer" crossorigin="anonymous"></audio>
       <div class="transport-controls">
-        <button class="wmp-btn" id="prevBtn">&#124;&;</button>
+        <button class="wmp-btn" id="prevBtn">&laquo;</button>
         <button class="wmp-btn" id="playPauseBtn">&#9658;</button>
         <button class="wmp-btn" id="stopBtn">&#9632;</button>
-        <button class="wmp-btn" id="nextBtn">&;&#124;</button>
+        <button class="wmp-btn" id="nextBtn">&raquo;</button>
       </div>
       <div class="progress-container">
         <span class="time-display" id="currentTime">0:00</span>
@@ -314,6 +331,33 @@ HTML_TEMPLATE = """<!DOCTYPE html>
   </div>
 
   <script>
+    // Window Dragging Logic
+    const wmpWindow = document.getElementById('wmpWindow');
+    const wmpHeader = document.getElementById('wmpHeader');
+    let isDragging = false;
+    let offsetX = 0, offsetY = 0;
+
+    wmpHeader.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      const rect = wmpWindow.getBoundingClientRect();
+      offsetX = e.clientX - rect.left;
+      offsetY = e.clientY - rect.top;
+      wmpWindow.style.transform = 'none';
+      wmpWindow.style.left = rect.left + 'px';
+      wmpWindow.style.top = rect.top + 'px';
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      wmpWindow.style.left = (e.clientX - offsetX) + 'px';
+      wmpWindow.style.top = (e.clientY - offsetY) + 'px';
+    });
+
+    document.addEventListener('mouseup', () => {
+      isDragging = false;
+    });
+
+    // Audio & Catalog Player Logic
     const audio = document.getElementById('audioPlayer');
     const playPauseBtn = document.getElementById('playPauseBtn');
     const stopBtn = document.getElementById('stopBtn');
@@ -340,7 +384,9 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           loadTrack(0);
         }
       })
-      .catch(err => console.error("Error loading beats.json:", err));
+      .catch(err => {
+        console.error("Error loading beats.json:", err);
+      });
 
     function renderTracks(list) {
       trackListContainer.innerHTML = '';
@@ -360,7 +406,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         row.addEventListener('click', () => {
           currentTrackIndex = index;
           loadTrack(currentTrackIndex);
-          audio.play();
+          playAudio();
         });
         trackListContainer.appendChild(row);
       });
@@ -375,7 +421,14 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     function loadTrack(index) {
       const track = tracks[index];
       if (!track) return;
-      audio.src = track.file || track.url;
+      
+      // Auto-formatting relative file paths
+      let src = track.file || track.url;
+      if (src && !src.startsWith('http') && !src.startsWith('/')) {
+        src = './' + src;
+      }
+      
+      audio.src = src;
       nowPlayingText.innerText = "Now Playing: " + (track.title || track.name);
       highlightActiveTrack();
     }
@@ -388,10 +441,14 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       });
     }
 
-    playPauseBtn.addEventListener('click', () => {
+    function playAudio() {
       if (!isInitialized) initAudio();
+      audio.play().catch(err => console.warn("Playback prevented or blocked:", err));
+    }
+
+    playPauseBtn.addEventListener('click', () => {
       if (audio.paused) {
-        audio.play();
+        playAudio();
       } else {
         audio.pause();
       }
@@ -402,13 +459,31 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       audio.currentTime = 0;
     });
 
+    prevBtn.addEventListener('click', () => {
+      if (tracks.length === 0) return;
+      currentTrackIndex = (currentTrackIndex - 1 + tracks.length) % tracks.length;
+      loadTrack(currentTrackIndex);
+      playAudio();
+    });
+
+    nextBtn.addEventListener('click', () => {
+      if (tracks.length === 0) return;
+      currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
+      loadTrack(currentTrackIndex);
+      playAudio();
+    });
+
     audio.addEventListener('play', () => {
-      playPauseBtn.innerText = "&#10074;&#10074;";
+      playPauseBtn.innerText = "❚❚";
       if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
     });
 
     audio.addEventListener('pause', () => {
-      playPauseBtn.innerText = "&#9658;";
+      playPauseBtn.innerText = "▶";
+    });
+
+    audio.addEventListener('ended', () => {
+      nextBtn.click();
     });
 
     audio.addEventListener('timeupdate', () => {
@@ -444,15 +519,19 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
     function initAudio() {
       if (isInitialized) return;
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      analyser = audioCtx.createAnalyser();
-      analyser.fftSize = 64;
-      dataArray = new Uint8Array(analyser.frequencyBinCount);
+      try {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 64;
+        dataArray = new Uint8Array(analyser.frequencyBinCount);
 
-      sourceNode = audioCtx.createMediaElementSource(audio);
-      sourceNode.connect(analyser);
-      analyser.connect(audioCtx.destination);
-      isInitialized = true;
+        sourceNode = audioCtx.createMediaElementSource(audio);
+        sourceNode.connect(analyser);
+        analyser.connect(audioCtx.destination);
+        isInitialized = true;
+      } catch (e) {
+        console.warn("AudioContext initialization warning:", e);
+      }
     }
 
     let phase = 0;
@@ -500,7 +579,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 """
 
 def build():
-    print("Building clean Netlify-style index.html...")
+    print("Building full draggable Netlify-equivalent index.html...")
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(HTML_TEMPLATE.strip())
     print("Build complete! index.html generated successfully.")
