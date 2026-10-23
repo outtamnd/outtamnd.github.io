@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Windows Media Player - Outtamnd Store</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="wmp-outer-frame" id="wmpFrame">
+    <div class="wmp-titlebar" id="wmpTitlebar">
+      <div class="wmp-title-left">
+        <span class="wmp-icon">&#127925;</span>
+        <span>Windows Media Player &mdash; Beats</span>
+      </div>
+      <div class="wmp-window-controls">
+        <button class="wmp-win-btn">&#128469;</button>
+        <button class="wmp-win-btn">&#128470;</button>
+        <button class="wmp-win-btn close">&#10005;</button>
+      </div>
+    </div>
+
+    <div class="wmp-menubar">
+      <span>File</span><span>View</span><span>Play</span><span>Tools</span><span>Help</span>
+    </div>
+
+    <div class="wmp-main-body">
+      <div class="wmp-sidebar">
+        <div class="sidebar-item active">Now Playing</div>
+        <div class="sidebar-item">Media Guide</div>
+        <div class="sidebar-item">Copy from CD</div>
+        <div class="sidebar-item">Media Library</div>
+        <div class="sidebar-item">Radio Tuner</div>
+      </div>
+
+      <div class="wmp-content-panel">
+        <div class="search-container">
+          <input type="text" id="searchInput" placeholder="Search catalog..." oninput="filterBeats()">
+        </div>
+        <div id="beat-list" class="beat-grid"></div>
+      </div>
+
+      <div class="wmp-right-panel">
+        <div class="right-header">Now Playing</div>
+        <div class="visualizer-box">
+          <canvas id="vizCanvas"></canvas>
+        </div>
+        <div class="now-playing-meta">
+          <span id="sideTitle" class="meta-title">Select a track</span>
+          <span id="sideBpm" class="meta-bpm"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="wmp-footer">
+      <div class="transport-controls">
+        <button class="ctrl-btn" title="Previous">&#9204;</button>
+        <button id="playPauseBtn" class="ctrl-btn main-play" onclick="togglePlayMain()">&#9658;</button>
+        <button class="ctrl-btn" title="Stop" onclick="stopAudio()">&#9632;</button>
+        <button class="ctrl-btn" title="Next">&#9205;</button>
+      </div>
+
+      <div class="wmp-progress-wrapper" onclick="seekAudio(event)">
+        <div id="progressBar" class="wmp-progress-fill"></div>
+      </div>
+
+      <div class="volume-area">
+        <span class="vol-icon">&#128266;</span>
+        <div class="vol-slider"></div>
+      </div>
+    </div>
+  </div>
+
+  <audio id="audioPlayer" crossorigin="anonymous" ontimeupdate="updateProgress()" onended="songEnded()"></audio>
+
+  <script>
+    const frame = document.getElementById('wmpFrame');
+    const titlebar = document.getElementById('wmpTitlebar');
+    let isDragging = false, startX, startY, initialLeft, initialTop;
+
+    titlebar.addEventListener('mousedown', (e) => {
+      if (e.target.closest('.wmp-window-controls')) return;
+      isDragging = true;
+      startX = e.clientX; startY = e.clientY;
+      const rect = frame.getBoundingClientRect();
+      frame.style.transform = 'none';
+      frame.style.left = rect.left + 'px';
+      frame.style.top = rect.top + 'px';
+      initialLeft = rect.left; initialTop = rect.top;
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
+    });
+
+    function onMouseMove(e) {
+      if (!isDragging) return;
+      frame.style.left = (initialLeft + (e.clientX - startX)) + 'px';
+      frame.style.top = (initialTop + (e.clientY - startY)) + 'px';
+    }
+
+    function onMouseUp() {
+      isDragging = false;
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    }
+
+    let allBeats = [], currentPlayingId = null;
+    const audio = document.getElementById('audioPlayer');
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    const progressBar = document.getElementById('progressBar');
+    const sideTitle = document.getElementById('sideTitle');
+    const sideBpm = document.getElementById('sideBpm');
+    const canvas = document.getElementById('vizCanvas');
+    const ctx = canvas.getContext('2d');
+
+    let audioCtx, analyser, sourceNode, dataArray, animId, isAudioInit = false;
+
+    function initVisualizer() {
+      if (isAudioInit) return;
+      try {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 64;
+        sourceNode = audioCtx.createMediaElementSource(audio);
+        sourceNode.connect(analyser);
+        analyser.connect(audioCtx.destination);
+        dataArray = new Uint8Array(analyser.frequencyBinCount);
+        isAudioInit = true;
+      } catch (e) {}
+    }
+
+    function drawVisualizer() {
+      canvas.width = canvas.parentElement.clientWidth;
+      canvas.height = canvas.parentElement.clientHeight;
+      function render() {
+        animId = requestAnimationFrame(render);
+        ctx.fillStyle = '#03070e';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        if (analyser && !audio.paused) {
+          analyser.getByteFrequencyData(dataArray);
+          const barWidth = (canvas.width / dataArray.length) * 1.5;
+          let x = 0;
+          for (let i = 0; i < dataArray.length; i++) {
+            const barHeight = (dataArray[i] / 255) * canvas.height * 0.85;
+            const grad = ctx.createLinearGradient(0, canvas.height, 0, 0);
+            grad.addColorStop(0, '#38bdf8'); grad.addColorStop(1, '#a855f7');
+            ctx.fillStyle = grad;
+            ctx.fillRect(x, canvas.height - barHeight, barWidth - 2, barHeight);
+            x += barWidth;
+          }
+        } else {
+          ctx.strokeStyle = '#1c4b8a'; ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.moveTo(0, canvas.height/2); ctx.lineTo(canvas.width, canvas.height/2); ctx.stroke();
+        }
+      }
+      cancelAnimationFrame(animId); render();
+    }
+
+    fetch('beats.json').then(res => res.json()).then(data => { allBeats = data; renderBeats(allBeats); drawVisualizer(); });
+
+    function renderBeats(beats) {
+      const container = document.getElementById('beat-list');
+      container.innerHTML = '';
+      if(beats.length === 0) { container.innerHTML = '<p class="no-results">No beats found.</p>'; return; }
+      beats.forEach(beat => {
+        const card = document.createElement('div');
+        card.className = `beat-card ${currentPlayingId === beat.id ? 'playing' : ''}`;
+        card.innerHTML = `
+          <div class="card-left">
+            <button class="card-play-btn" onclick="playBeat('${beat.audioUrl}', '${beat.title.replace(/'/g, "\\'")}', '', '${beat.id}')">
+              ${currentPlayingId === beat.id && !audio.paused ? '&#10074;&#10074;' : '&#9658;'}
+            </button>
+            <div class="beat-info">
+              <h3>${beat.title}</h3>
+              
+            </div>
+          </div>
+          <div class="card-right">
+            <span class="price-tag">${beat.price || '$25'}</span>
+            <a href="${beat.stripeLink}" target="_blank" class="buy-card-btn">Instant Buy</a>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function playBeat(url, title, bpm, id) {
+      initVisualizer();
+      if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+      if (currentPlayingId === id) { togglePlayMain(); return; }
+      currentPlayingId = id; audio.src = url; audio.play();
+      sideTitle.innerText = title; sideBpm.innerText = bpm + " BPM";
+      playPauseBtn.innerHTML = "&#10074;&#10074;";
+      renderBeats(getFilteredBeats());
+    }
+
+    function togglePlayMain() {
+      if (!audio.src) return;
+      initVisualizer();
+      if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+      if (audio.paused) { audio.play(); playPauseBtn.innerHTML = "&#10074;&#10074;"; }
+      else { audio.pause(); playPauseBtn.innerHTML = "&#9658;"; }
+      renderBeats(getFilteredBeats());
+    }
+
+    function stopAudio() {
+      audio.pause(); audio.currentTime = 0;
+      playPauseBtn.innerHTML = "&#9658;"; sideTitle.innerText = "Stopped"; sideBpm.innerText = "";
+      renderBeats(getFilteredBeats());
+    }
+
+    function updateProgress() {
+      if (audio.duration) progressBar.style.width = (audio.currentTime / audio.duration) * 100 + '%';
+    }
+
+    function seekAudio(e) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
+    }
+
+    function songEnded() { playPauseBtn.innerHTML = "&#9658;"; renderBeats(getFilteredBeats()); }
+    function filterBeats() { renderBeats(getFilteredBeats()); }
+    function getFilteredBeats() {
+      const query = document.getElementById('searchInput').value.toLowerCase();
+      return allBeats.filter(b => b.title.toLowerCase().includes(query));
+    }
+    window.addEventListener('resize', drawVisualizer);
+  </script>
+</body>
+</html>

@@ -1,0 +1,113 @@
+
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+body { 
+  background-image: url('bliss.jpg');
+  background-size: cover; background-position: center; background-repeat: no-repeat; background-attachment: fixed;
+  background-color: #004e98; color: #f4f4f5; min-height: 100vh; overflow: hidden; position: relative;
+}
+.wmp-outer-frame { 
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: 940px; height: 620px; background: linear-gradient(135deg, #2b5a9e 0%, #10316b 100%); 
+  border: 2px solid #5a9bd5; border-radius: 10px; box-shadow: 0 30px 70px rgba(0,0,0,0.85); 
+  display: flex; flex-direction: column; overflow: hidden; user-select: none;
+}
+.wmp-titlebar { background: linear-gradient(180deg, #3d78c9 0%, #1c4b8a 100%); padding: 6px 12px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #11315e; color: #fff; font-size: 0.8rem; font-weight: 700; cursor: grab; }
+.wmp-titlebar:active { cursor: grabbing; }
+.wmp-title-left { display: flex; align-items: center; gap: 8px; pointer-events: none; }
+.wmp-window-controls { display: flex; gap: 3px; }
+.wmp-win-btn { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); color: #fff; width: 20px; height: 18px; border-radius: 3px; font-size: 0.65rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.wmp-win-btn:hover { background: rgba(255,255,255,0.4); }
+.wmp-win-btn.close:hover { background: #ef4444; border-color: #dc2626; }
+.wmp-menubar { background: #d4d0c8; color: #000; padding: 3px 10px; font-size: 0.75rem; display: flex; gap: 14px; border-bottom: 1px solid #888; }
+.wmp-menubar span { cursor: pointer; }
+.wmp-menubar span:hover { background: #316ac5; color: #fff; padding: 0 4px; border-radius: 2px; }
+.wmp-main-body { flex-grow: 1; display: flex; background: #0c1b33; overflow: hidden; }
+.wmp-sidebar { width: 170px; background: linear-gradient(180deg, #1e4d8c 0%, #0d244a 100%); border-right: 1px solid #27528f; padding: 10px 0; display: flex; flex-direction: column; gap: 2px; }
+.sidebar-item { padding: 8px 14px; font-size: 0.78rem; font-weight: 600; color: #cce0ff; cursor: pointer; border-left: 3px solid transparent; }
+.sidebar-item:hover { color: #fff; background: rgba(255,255,255,0.06); }
+.sidebar-item.active { color: #fff; background: rgba(255,255,255,0.12); border-left-color: #38bdf8; }
+.wmp-content-panel { flex-grow: 1; display: flex; flex-direction: column; padding: 14px; overflow-y: auto; background: rgba(10, 20, 38, 0.85); border-right: 1px solid #1c4b8a; }
+.search-container { margin-bottom: 12px; }
+.search-container input { width: 100%; background: #061122; border: 1px solid #2b5a9e; border-radius: 6px; padding: 8px 12px; color: #fff; font-size: 0.82rem; outline: none; }
+.search-container input:focus { border-color: #38bdf8; }
+.beat-grid { display: flex; flex-direction: column; gap: 8px; }
+.beat-card { background: rgba(20, 40, 70, 0.6); border: 1px solid rgba(80, 130, 200, 0.3); border-radius: 8px; padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px; transition: background 0.2s; }
+.beat-card:hover { background: rgba(30, 60, 100, 0.8); border-color: #38bdf8; }
+.beat-card.playing { background: rgba(56, 189, 248, 0.15); border-color: #38bdf8; }
+.card-left { display: flex; align-items: center; gap: 10px; overflow: hidden; }
+.card-play-btn { 
+  background: linear-gradient(135deg, #f0f4f8 0%, #c5d7ed 50%, #90b4dc 51%, #6792c3 100%); 
+  color: #0c1b33; border: 1px solid #ffffff; border-radius: 50%; width: 32px; height: 32px; min-width: 32px; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 1px 1px rgba(255,255,255,0.8), 0 2px 4px rgba(0,0,0,0.4);
+}
+.card-play-btn:hover { background: linear-gradient(135deg, #ffffff 0%, #d8e5f5 50%, #abc6e6 51%, #82a8d4 100%); }
+.beat-card.playing .card-play-btn { background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%); color: #fff; border-color: #7dd3fc; }
+.beat-info h3 { font-size: 0.85rem; font-weight: 600; color: #fff; text-transform: capitalize; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
+.beat-info p { font-size: 0.73rem; color: #93c5fd; }
+.card-right { display: flex; align-items: center; gap: 8px; }
+.price-tag { font-size: 0.82rem; font-weight: 700; color: #38bdf8; }
+.buy-card-btn { background: #22c55e; color: #000; font-weight: 700; padding: 5px 10px; border-radius: 5px; text-decoration: none; font-size: 0.72rem; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
+.buy-card-btn:hover { background: #16a34a; }
+.wmp-right-panel { width: 220px; background: linear-gradient(180deg, #122d59 0%, #081730 100%); display: flex; flex-direction: column; padding: 12px; justify-content: space-between; }
+.right-header { font-size: 0.75rem; font-weight: 700; color: #93c5fd; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+.visualizer-box { flex-grow: 1; background: #03070e; border: 1px solid #1c4b8a; border-radius: 6px; display: flex; align-items: center; justify-content: center; overflow: hidden; margin-bottom: 12px; box-shadow: inset 0 0 15px rgba(0,0,0,0.8); }
+#vizCanvas { width: 100%; height: 100%; display: block; }
+.now-playing-meta { background: rgba(10, 25, 50, 0.7); border: 1px solid #1c4b8a; border-radius: 6px; padding: 8px 10px; text-align: center; }
+.meta-title { display: block; font-size: 0.8rem; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
+.meta-bpm { font-size: 0.7rem; color: #38bdf8; }
+.wmp-footer { background: linear-gradient(180deg, #2b5a9e 0%, #153c75 50%, #0d244a 100%); border-top: 1px solid #4a84d2; padding: 10px 16px; display: flex; align-items: center; gap: 14px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.3); }
+.transport-controls { display: flex; gap: 5px; align-items: center; }
+.ctrl-btn { 
+  background: linear-gradient(135deg, #f0f4f8 0%, #d0dfef 50%, #a2bee1 51%, #79a3d4 100%); 
+  border: 1px solid #ffffff; border-radius: 50%; color: #0c1b33; width: 32px; height: 32px; font-size: 0.7rem; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 1px 1px rgba(255,255,255,0.9), 0 2px 4px rgba(0,0,0,0.5);
+}
+.ctrl-btn:hover { background: linear-gradient(135deg, #ffffff 0%, #e2edf7 50%, #bcd3ef 51%, #95bde9 100%); }
+.ctrl-btn.main-play { 
+  background: linear-gradient(135deg, #e0f2fe 0%, #7dd3fc 50%, #0284c7 51%, #0369a1 100%); 
+  color: #fff; border: 1px solid #bae6fd; width: 40px; height: 40px; font-size: 0.9rem; box-shadow: inset 0 1px 2px rgba(255,255,255,0.9), 0 3px 8px rgba(0,0,0,0.6);
+}
+.wmp-progress-wrapper { flex-grow: 1; height: 8px; background: #050b14; border: 1px solid #1c4b8a; border-radius: 4px; cursor: pointer; position: relative; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,0.8); }
+.wmp-progress-fill { width: 0%; height: 100%; background: linear-gradient(90deg, #38bdf8, #a855f7); pointer-events: none; }
+.volume-area { display: flex; align-items: center; gap: 6px; }
+.vol-icon { font-size: 0.9rem; color: #bae6fd; }
+.vol-slider { width: 60px; height: 6px; background: #050b14; border: 1px solid #1c4b8a; border-radius: 3px; position: relative; box-shadow: inset 0 1px 2px rgba(0,0,0,0.8); }
+.vol-slider::after { content: ''; position: absolute; left: 70%; top: -3px; width: 6px; height: 12px; background: linear-gradient(180deg, #f0f4f8 0%, #9ab9dc 100%); border: 1px solid #fff; border-radius: 2px; }
+.no-results { text-align: center; color: #93c5fd; padding: 30px; font-size: 0.85rem; }
+
+/* --- MOBILE RESPONSIVE OPTIMIZATIONS --- */
+@media (max-width: 768px) {
+  body {
+    overflow: hidden;
+    background-size: cover;
+  }
+  
+  /* Make the WMP window take up the full screen on mobile */
+  .window, .wmp-container, #player-window {
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    top: 0 !important;
+    left: 0 !important;
+    transform: none !important;
+    border-radius: 0 !important;
+    position: fixed !important;
+  }
+
+  /* Stack main panels vertically */
+  .content-area, .main-body, .catalog-container {
+    flex-direction: column !important;
+  }
+
+  /* Optimize sidebars and panels for mobile viewports */
+  .now-playing-panel, .right-sidebar {
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  /* Make interactive buttons touch-friendly */
+  button, .btn, .instant-buy-btn {
+    padding: 10px 14px !important;
+    font-size: 14px !important;
+    cursor: pointer;
+  }
+}
