@@ -3,91 +3,574 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Windows Media Player – Outtamnd Beat Catalog</title>
-  
-  <!-- Webamp Dependency -->
-  <script src="https://unpkg.com/webamp@1.5.0/built/webamp.bundle.min.js"></script>
-  
+  <title>Windows Media Player - Outtamnd Beat Catalog</title>
   <style>
-    body {
-      background-color: #000;
-      color: #fff;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    /* Windows Media Player 9 / XP Silver-Blue Theme */
+    * {
+      box-sizing: border-box;
       margin: 0;
       padding: 0;
+      user-select: none;
+    }
+    body {
+      background: url('bliss.jpg') no-repeat center center fixed;
+      background-size: cover;
+      font-family: Tahoma, Arial, sans-serif;
+      color: #000;
       display: flex;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
+      overflow: hidden;
+      padding: 10px;
     }
-    #app-container {
+    .wmp-window {
       width: 100%;
-      max-width: 1200px;
-      padding: 20px;
+      max-width: 880px;
+      background: linear-gradient(to bottom, #d6dfef 0%, #b0c4de 100%);
+      border: 3px solid;
+      border-color: #ffffff #7190b9 #7190b9 #ffffff;
+      box-shadow: 6px 6px 20px rgba(0,0,0,0.5);
+      border-radius: 4px;
+      overflow: hidden;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
     }
-    #webamp-app {
+    .wmp-titlebar {
+      background: linear-gradient(to right, #0055ea 0%, #3d8bff 50%, #0055ea 100%);
+      color: white;
+      padding: 6px 10px;
+      font-weight: bold;
+      font-size: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      text-shadow: 1px 1px #002366;
+      cursor: move;
+    }
+    .wmp-window-controls span {
+      background: #d6dfef;
+      color: #000;
+      border: 1px solid #ffffff;
+      border-color: #ffffff #002366 #002366 #ffffff;
+      padding: 0px 5px;
+      font-size: 10px;
+      margin-left: 2px;
+      cursor: pointer;
+    }
+    .wmp-menubar {
+      background: #ECE9D8;
+      padding: 3px 6px;
+      font-size: 11px;
+      border-bottom: 1px solid #c5d4ef;
+      display: flex;
+      gap: 12px;
+    }
+    .wmp-menubar span {
+      cursor: pointer;
+    }
+    .wmp-menubar span:hover {
+      background: #3d8bff;
+      color: white;
+    }
+    .wmp-body {
+      display: grid;
+      grid-template-columns: 170px 1fr 220px;
+      background: #fff;
+      border-top: 1px solid #7190b9;
+      border-bottom: 1px solid #7190b9;
+      min-height: 380px;
+    }
+    @media (max-width: 768px) {
+      .wmp-window {
+        position: relative;
+        top: 0;
+        left: 0;
+        transform: none;
+      }
+      .wmp-body {
+        grid-template-columns: 1fr;
+      }
+      .wmp-sidebar, .wmp-right-panel {
+        display: none;
+      }
+    }
+    .wmp-sidebar {
+      background: linear-gradient(to bottom, #f0f4f9 0%, #d8e4f5 100%);
+      border-right: 1px solid #7190b9;
+      padding: 10px 0;
+    }
+    .sidebar-heading {
+      font-size: 11px;
+      font-weight: bold;
+      color: #002366;
+      padding: 4px 12px;
+      margin-bottom: 4px;
+    }
+    .sidebar-item {
+      font-size: 11px;
+      padding: 4px 12px;
+      cursor: pointer;
+      color: #000;
+    }
+    .sidebar-item:hover {
+      background: #3d8bff;
+      color: white;
+    }
+    .sidebar-item.active {
+      font-weight: bold;
+      color: #0055ea;
+    }
+    .wmp-main {
+      padding: 10px;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      overflow-y: auto;
+      max-height: 400px;
+    }
+    .search-bar {
       width: 100%;
-      height: 600px;
+      padding: 5px 8px;
+      font-size: 11px;
+      border: 1px solid #7190b9;
+      background: #fff;
+      outline: none;
+      user-select: text;
+    }
+    .track-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 8px;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .track-row:hover {
+      background-color: #eef3fc;
+    }
+    .track-row.active {
+      background-color: #0055ea;
+      color: white;
+    }
+    .track-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .mini-play-btn {
+      background: linear-gradient(to bottom, #f9f9f9 0%, #dcdcdc 100%);
+      border: 1px solid #707070;
+      width: 18px;
+      height: 18px;
+      font-size: 9px;
+      cursor: pointer;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #000;
+    }
+    .track-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .price-tag {
+      font-size: 11px;
+      font-weight: bold;
+      color: #333;
+    }
+    .track-row.active .price-tag, .track-row.active .track-title {
+      color: white;
+    }
+    .buy-btn {
+      background: linear-gradient(to bottom, #e6f4ea 0%, #ceead6 100%);
+      border: 1px solid #137333;
+      color: #137333;
+      padding: 3px 8px;
+      font-size: 11px;
+      font-weight: bold;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    .buy-btn:hover {
+      background: #137333;
+      color: white;
+    }
+    .wmp-right-panel {
+      background: #000000;
+      border-left: 1px solid #405060;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 10px;
+      color: white;
+    }
+    .visualizer-box {
+      width: 100%;
+      height: 180px;
+      background-color: #000000;
+      border: 2px solid;
+      border-color: #405060 #ffffff #ffffff #405060;
+      position: relative;
+      overflow: hidden;
+    }
+    #wmpVisualizer {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    .now-playing-panel {
+      font-size: 11px;
+      color: #a0c0f0;
+      margin-top: 10px;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .wmp-footer {
+      background: linear-gradient(to bottom, #d6dfef 0%, #b0c4de 100%);
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-top: 1px solid #ffffff;
+    }
+    .transport-controls {
+      display: flex;
+      gap: 4px;
+    }
+    .wmp-btn {
+      background: linear-gradient(to bottom, #f9f9f9 0%, #dcdcdc 100%);
+      border: 1px solid #707070;
+      padding: 4px 10px;
+      font-size: 11px;
+      cursor: pointer;
+      font-weight: bold;
+      border-radius: 2px;
+      min-width: 28px;
+    }
+    .wmp-btn:active {
+      background: linear-gradient(to bottom, #dcdcdc 0%, #f9f9f9 100%);
+    }
+    .progress-container {
+      flex-grow: 1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .time-display {
+      font-size: 10px;
+      color: #002366;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
 
-  <div id="app-container">
-    <div id="webamp-app"></div>
+  <div class="wmp-window" id="wmpWindow">
+    <div class="wmp-titlebar" id="wmpHeader">
+      <span>Windows Media Player &mdash; Outtamnd Beat Catalog</span>
+      <div class="wmp-window-controls">
+        <span>_</span><span>&#x25A1;</span><span>&times;</span>
+      </div>
+    </div>
+    <div class="wmp-menubar">
+      <span>File</span><span>View</span><span>Play</span><span>Tools</span><span>Help</span>
+    </div>
+    
+    <div class="wmp-body">
+      <!-- Left Sidebar -->
+      <div class="wmp-sidebar">
+        <div class="sidebar-heading">Now Playing</div>
+        <div class="sidebar-item active">Media Guide</div>
+        <div class="sidebar-item">Copy from CD</div>
+        <div class="sidebar-item">Media Library</div>
+        <div class="sidebar-item">Radio Tuner</div>
+      </div>
+
+      <!-- Main Catalog Area -->
+      <div class="wmp-main">
+        <input type="text" class="search-bar" id="searchInput" placeholder="Search catalog...">
+        <div id="trackListContainer"></div>
+      </div>
+
+      <!-- Right Visualizer Panel -->
+      <div class="wmp-right-panel">
+        <div style="font-size: 10px; color: #7190b9; margin-bottom: 4px; font-weight: bold;">VISUALIZATION</div>
+        <div class="visualizer-box">
+          <canvas id="wmpVisualizer"></canvas>
+        </div>
+        <div class="now-playing-panel" id="nowPlayingText">Select a track</div>
+      </div>
+    </div>
+
+    <!-- Bottom Controls Footer -->
+    <div class="wmp-footer">
+      <audio id="audioPlayer" crossorigin="anonymous"></audio>
+      <div class="transport-controls">
+        <button class="wmp-btn" id="prevBtn">&laquo;</button>
+        <button class="wmp-btn" id="playPauseBtn">&#9658;</button>
+        <button class="wmp-btn" id="stopBtn">&#9632;</button>
+        <button class="wmp-btn" id="nextBtn">&raquo;</button>
+      </div>
+      <div class="progress-container">
+        <span class="time-display" id="currentTime">0:00</span>
+        <input type="range" id="progressBar" value="0" max="100" style="flex-grow: 1; accent-color: #0055ea;">
+        <span class="time-display" id="duration">0:00</span>
+      </div>
+    </div>
   </div>
 
   <script>
-    document.addEventListener("DOMContentLoaded", async () => {
-      const appContainer = document.getElementById("webamp-app");
+    // Window Dragging Logic
+    const wmpWindow = document.getElementById('wmpWindow');
+    const wmpHeader = document.getElementById('wmpHeader');
+    let isDragging = false;
+    let offsetX = 0, offsetY = 0;
 
-      // Auto-detect and build relative MP3 URLs cleanly
-      async function fetchTrackList() {
-        // Fallback list / dynamic builder
-        // Replace or extend this array with your full track names if needed
-        const baseTracks = [
-          "turnt",
-          "drugs frm egypt",
-          "to da moon",
-          "gas em up",
-          "blast off",
-          "sapphire",
-          "summertime",
-          "limewire",
-          "dog pound",
-          "gangsta",
-          "love story"
-        ];
+    wmpHeader.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      const rect = wmpWindow.getBoundingClientRect();
+      offsetX = e.clientX - rect.left;
+      offsetY = e.clientY - rect.top;
+      wmpWindow.style.transform = 'none';
+      wmpWindow.style.left = rect.left + 'px';
+      wmpWindow.style.top = rect.top + 'px';
+    });
 
-        return baseTracks.map(trackName => {
-          // Sanitizes relative path to avoid /undefined or root-domain 404s
-          const filename = trackName.toLowerCase().endsWith('.mp3') 
-            ? trackName 
-            : `${trackName}.mp3`;
+    document.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      wmpWindow.style.left = (e.clientX - offsetX) + 'px';
+      wmpWindow.style.top = (e.clientY - offsetY) + 'px';
+    });
 
-          return {
-            metaData: {
-              artist: "Outtamnd",
-              title: trackName.replace('.mp3', '')
-            },
-            // Direct relative path targeting the uploaded MP3S folder
-            url: `./MP3S/${encodeURIComponent(filename)}`
-          };
+    document.addEventListener('mouseup', () => {
+      isDragging = false;
+    });
+
+    // Audio & Catalog Player Logic
+    const audio = document.getElementById('audioPlayer');
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const progressBar = document.getElementById('progressBar');
+    const currentTimeEl = document.getElementById('currentTime');
+    const durationEl = document.getElementById('duration');
+    const nowPlayingText = document.getElementById('nowPlayingText');
+    const trackListContainer = document.getElementById('trackListContainer');
+    const searchInput = document.getElementById('searchInput');
+
+    let tracks = [];
+    let currentTrackIndex = 0;
+    let isInitialized = false;
+    let audioCtx, analyser, dataArray, sourceNode;
+
+    fetch('beats.json')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.length > 0) {
+          tracks = data;
+          renderTracks(tracks);
+          loadTrack(0);
+        }
+      })
+      .catch(err => {
+        console.error("Error loading beats.json:", err);
+      });
+
+    function renderTracks(list) {
+      trackListContainer.innerHTML = '';
+      list.forEach((track, index) => {
+        const row = document.createElement('div');
+        row.className = 'track-row' + (index === currentTrackIndex ? ' active' : '');
+        row.innerHTML = `
+          <div class="track-info">
+            <button class="mini-play-btn">&#9658;</button>
+            <span class="track-title">${track.title || track.name}</span>
+          </div>
+          <div class="track-actions">
+            <span class="price-tag">${track.price || '$25'}</span>
+            <button class="buy-btn" onclick="event.stopPropagation(); alert('Redirecting to checkout for ${track.title || track.name}...');">Instant Buy</button>
+          </div>
+        `;
+        row.addEventListener('click', () => {
+          currentTrackIndex = index;
+          loadTrack(currentTrackIndex);
+          playAudio();
         });
+        trackListContainer.appendChild(row);
+      });
+    }
+
+    searchInput.addEventListener('input', (e) => {
+      const term = e.target.value.toLowerCase();
+      const filtered = tracks.filter(t => (t.title || t.name).toLowerCase().includes(term));
+      renderTracks(filtered);
+    });
+
+    function loadTrack(index) {
+      const track = tracks[index];
+      if (!track) return;
+      
+      // Auto-formatting relative file paths
+      let src = track.file || track.url;
+      if (src && !src.startsWith('http') && !src.startsWith('/')) {
+        src = './' + src;
       }
+      
+      audio.src = src;
+      nowPlayingText.innerText = "Now Playing: " + (track.title || track.name);
+      highlightActiveTrack();
+    }
 
-      const tracks = await fetchTrackList();
+    function highlightActiveTrack() {
+      const rows = trackListContainer.querySelectorAll('.track-row');
+      rows.forEach((row, i) => {
+        if (i === currentTrackIndex) row.classList.add('active');
+        else row.classList.remove('active');
+      });
+    }
 
-      if (Webamp.isSupported()) {
-        const webamp = new Webamp({
-          initialTracks: tracks
-        });
+    function playAudio() {
+      if (!isInitialized) initAudio();
+      audio.play().catch(err => console.warn("Playback prevented or blocked:", err));
+    }
 
-        webamp.renderWhenReady(appContainer);
+    playPauseBtn.addEventListener('click', () => {
+      if (audio.paused) {
+        playAudio();
       } else {
-        appContainer.innerHTML = "<p>Webamp is not supported on this browser.</p>";
+        audio.pause();
       }
     });
+
+    stopBtn.addEventListener('click', () => {
+      audio.pause();
+      audio.currentTime = 0;
+    });
+
+    prevBtn.addEventListener('click', () => {
+      if (tracks.length === 0) return;
+      currentTrackIndex = (currentTrackIndex - 1 + tracks.length) % tracks.length;
+      loadTrack(currentTrackIndex);
+      playAudio();
+    });
+
+    nextBtn.addEventListener('click', () => {
+      if (tracks.length === 0) return;
+      currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
+      loadTrack(currentTrackIndex);
+      playAudio();
+    });
+
+    audio.addEventListener('play', () => {
+      playPauseBtn.innerText = "❚❚";
+      if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+    });
+
+    audio.addEventListener('pause', () => {
+      playPauseBtn.innerText = "▶";
+    });
+
+    audio.addEventListener('ended', () => {
+      nextBtn.click();
+    });
+
+    audio.addEventListener('timeupdate', () => {
+      if (audio.duration) {
+        progressBar.value = (audio.currentTime / audio.duration) * 100;
+        currentTimeEl.innerText = formatTime(audio.currentTime);
+        durationEl.innerText = formatTime(audio.duration);
+      }
+    });
+
+    progressBar.addEventListener('input', () => {
+      if (audio.duration) {
+        audio.currentTime = (progressBar.value / 100) * audio.duration;
+      }
+    });
+
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    }
+
+    // --- 60 FPS Visualizer ---
+    const canvas = document.getElementById('wmpVisualizer');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+      canvas.width = canvas.clientWidth * window.devicePixelRatio;
+      canvas.height = canvas.clientHeight * window.devicePixelRatio;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function initAudio() {
+      if (isInitialized) return;
+      try {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 64;
+        dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+        sourceNode = audioCtx.createMediaElementSource(audio);
+        sourceNode.connect(analyser);
+        analyser.connect(audioCtx.destination);
+        isInitialized = true;
+      } catch (e) {
+        console.warn("AudioContext initialization warning:", e);
+      }
+    }
+
+    let phase = 0;
+    function drawVisualizer() {
+      requestAnimationFrame(drawVisualizer);
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      if (!analyser) return;
+      analyser.getByteFrequencyData(dataArray);
+
+      let bassSum = 0;
+      for (let i = 0; i < 4; i++) bassSum += dataArray[i];
+      let bassEnergy = bassSum / 4;
+      phase += 0.04 + (bassEnergy / 4000);
+
+      const width = canvas.width;
+      const height = canvas.height;
+      const centerY = height / 2;
+
+      const ribbons = [
+        { color: 'rgba(0, 162, 255, 0.9)', speed: 1.2, freq: 0.01, amp: 0.4 },
+        { color: 'rgba(0, 230, 255, 0.7)', speed: 0.8, freq: 0.015, amp: 0.3 }
+      ];
+
+      ribbons.forEach(r => {
+        ctx.beginPath();
+        ctx.lineWidth = 2.5 * window.devicePixelRatio;
+        ctx.strokeStyle = r.color;
+        for (let x = 0; x <= width; x += 4 * window.devicePixelRatio) {
+          let bin = Math.floor((x / width) * dataArray.length);
+          let val = dataArray[bin] || 0;
+          let disp = Math.sin(x * r.freq + phase * r.speed) * (height * r.amp) * (0.3 + (val/255)*0.7);
+          let y = centerY + disp;
+          if (x === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      });
+    }
+    drawVisualizer();
   </script>
 </body>
 </html>
