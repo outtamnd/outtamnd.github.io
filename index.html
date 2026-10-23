@@ -3,228 +3,341 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Windows Media Player - Outtamnd Store</title>
-  <link rel="stylesheet" href="styles.css">
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <title>Beats</title>
+  <style>
+    /* Windows Media Player 9 / XP Silver-Blue Theme */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: #ECE9D8;
+      font-family: Tahoma, Arial, sans-serif;
+      color: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 10px;
+    }
+    .wmp-container {
+      width: 100%;
+      max-width: 600px;
+      background: linear-gradient(to bottom, #d6dfef 0%, #b0c4de 100%);
+      border: 3px solid;
+      border-color: #ffffff #7190b9 #7190b9 #ffffff;
+      box-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .wmp-titlebar {
+      background: linear-gradient(to right, #0055ea 0%, #3d8bff 50%, #0055ea 100%);
+      color: white;
+      padding: 6px 10px;
+      font-weight: bold;
+      font-size: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      text-shadow: 1px 1px #002366;
+    }
+    .wmp-content {
+      padding: 12px;
+    }
+    .visualizer-box {
+      width: 100%;
+      height: 160px;
+      background-color: #000000;
+      border: 2px solid;
+      border-color: #405060 #ffffff #ffffff #405060;
+      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8);
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+    #wmpVisualizer {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    .now-playing {
+      font-size: 13px;
+      font-weight: bold;
+      margin-bottom: 8px;
+      color: #002366;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .controls-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      background: #c5d4ef;
+      padding: 6px;
+      border: 1px solid #7190b9;
+    }
+    button.wmp-btn {
+      background: linear-gradient(to bottom, #f9f9f9 0%, #dcdcdc 100%);
+      border: 1px solid #707070;
+      padding: 4px 10px;
+      font-size: 11px;
+      cursor: pointer;
+      font-weight: bold;
+      border-radius: 2px;
+    }
+    button.wmp-btn:active {
+      background: linear-gradient(to bottom, #dcdcdc 0%, #f9f9f9 100%);
+    }
+    .tracklist {
+      max-height: 220px;
+      overflow-y: auto;
+      background: #fff;
+      border: 2px inset #7190b9;
+      padding: 4px;
+    }
+    .track-item {
+      padding: 6px 8px;
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .track-item:hover {
+      background-color: #3d8bff;
+      color: white;
+    }
+    .track-item.active {
+      background-color: #0055ea;
+      color: white;
+      font-weight: bold;
+    }
+    @media (max-width: 480px) {
+      .wmp-container {
+        border-width: 1px;
+      }
+      .visualizer-box {
+        height: 130px;
+      }
+    }
+  </style>
 </head>
 <body>
-  <div class="wmp-outer-frame" id="wmpFrame">
-    <div class="wmp-titlebar" id="wmpTitlebar">
-      <div class="wmp-title-left">
-        <span class="wmp-icon">&#127925;</span>
-        <span>Windows Media Player &mdash; Beats</span>
-      </div>
-      <div class="wmp-window-controls">
-        <button class="wmp-win-btn">&#128469;</button>
-        <button class="wmp-win-btn">&#128470;</button>
-        <button class="wmp-win-btn close">&#10005;</button>
-      </div>
+
+  <div class="wmp-container">
+    <div class="wmp-titlebar">
+      <span>Windows Media Player - Outtamnd Beats</span>
+      <span>[_][O][X]</span>
     </div>
-
-    <div class="wmp-menubar">
-      <span>File</span><span>View</span><span>Play</span><span>Tools</span><span>Help</span>
-    </div>
-
-    <div class="wmp-main-body">
-      <div class="wmp-sidebar">
-        <div class="sidebar-item active">Now Playing</div>
-        <div class="sidebar-item">Media Guide</div>
-        <div class="sidebar-item">Copy from CD</div>
-        <div class="sidebar-item">Media Library</div>
-        <div class="sidebar-item">Radio Tuner</div>
+    <div class="wmp-content">
+      
+      <!-- Visualizer Box -->
+      <div class="visualizer-box">
+        <canvas id="wmpVisualizer"></canvas>
       </div>
 
-      <div class="wmp-content-panel">
-        <div class="search-container">
-          <input type="text" id="searchInput" placeholder="Search catalog..." oninput="filterBeats()">
-        </div>
-        <div id="beat-list" class="beat-grid"></div>
+      <div class="now-playing" id="nowPlayingText">Select a beat to play</div>
+
+      <!-- Audio Element -->
+      <audio id="audioPlayer"></audio>
+
+      <!-- Controls -->
+      <div class="controls-bar">
+        <button class="wmp-btn" id="playPauseBtn">Play</button>
+        <span id="currentTime" style="font-size: 11px;">0:00</span>
+        <input type="range" id="progressBar" value="0" max="100" style="flex-grow: 1;">
+        <span id="duration" style="font-size: 11px;">0:00</span>
       </div>
 
-      <div class="wmp-right-panel">
-        <div class="right-header">Now Playing</div>
-        <div class="visualizer-box">
-          <canvas id="vizCanvas"></canvas>
-        </div>
-        <div class="now-playing-meta">
-          <span id="sideTitle" class="meta-title">Select a track</span>
-          <span id="sideBpm" class="meta-bpm"></span>
-        </div>
-      </div>
-    </div>
+      <!-- Playlist -->
+      <div class="tracklist" id="trackList"></div>
 
-    <div class="wmp-footer">
-      <div class="transport-controls">
-        <button class="ctrl-btn" title="Previous">&#9204;</button>
-        <button id="playPauseBtn" class="ctrl-btn main-play" onclick="togglePlayMain()">&#9658;</button>
-        <button class="ctrl-btn" title="Stop" onclick="stopAudio()">&#9632;</button>
-        <button class="ctrl-btn" title="Next">&#9205;</button>
-      </div>
-
-      <div class="wmp-progress-wrapper" onclick="seekAudio(event)">
-        <div id="progressBar" class="wmp-progress-fill"></div>
-      </div>
-
-      <div class="volume-area">
-        <span class="vol-icon">&#128266;</span>
-        <div class="vol-slider"></div>
-      </div>
     </div>
   </div>
 
-  <audio id="audioPlayer" crossorigin="anonymous" ontimeupdate="updateProgress()" onended="songEnded()"></audio>
-
   <script>
-    const frame = document.getElementById('wmpFrame');
-    const titlebar = document.getElementById('wmpTitlebar');
-    let isDragging = false, startX, startY, initialLeft, initialTop;
-
-    titlebar.addEventListener('mousedown', (e) => {
-      if (e.target.closest('.wmp-window-controls')) return;
-      isDragging = true;
-      startX = e.clientX; startY = e.clientY;
-      const rect = frame.getBoundingClientRect();
-      frame.style.transform = 'none';
-      frame.style.left = rect.left + 'px';
-      frame.style.top = rect.top + 'px';
-      initialLeft = rect.left; initialTop = rect.top;
-      document.addEventListener('mousemove', onMouseMove);
-      document.addEventListener('mouseup', onMouseUp);
-    });
-
-    function onMouseMove(e) {
-      if (!isDragging) return;
-      frame.style.left = (initialLeft + (e.clientX - startX)) + 'px';
-      frame.style.top = (initialTop + (e.clientY - startY)) + 'px';
-    }
-
-    function onMouseUp() {
-      isDragging = false;
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);
-    }
-
-    let allBeats = [], currentPlayingId = null;
     const audio = document.getElementById('audioPlayer');
     const playPauseBtn = document.getElementById('playPauseBtn');
     const progressBar = document.getElementById('progressBar');
-    const sideTitle = document.getElementById('sideTitle');
-    const sideBpm = document.getElementById('sideBpm');
-    const canvas = document.getElementById('vizCanvas');
-    const ctx = canvas.getContext('2d');
+    const currentTimeEl = document.getElementById('currentTime');
+    const durationEl = document.getElementById('duration');
+    const nowPlayingText = document.getElementById('nowPlayingText');
+    const trackListEl = document.getElementById('trackList');
 
-    let audioCtx, analyser, sourceNode, dataArray, animId, isAudioInit = false;
+    let tracks = [
+      { title: "Sample Beat 1", file: "beat1.mp3" },
+      { title: "Sample Beat 2", file: "beat2.mp3" }
+    ];
 
-    function initVisualizer() {
-      if (isAudioInit) return;
-      try {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        analyser = audioCtx.createAnalyser();
-        analyser.fftSize = 64;
-        sourceNode = audioCtx.createMediaElementSource(audio);
-        sourceNode.connect(analyser);
-        analyser.connect(audioCtx.destination);
-        dataArray = new Uint8Array(analyser.frequencyBinCount);
-        isAudioInit = true;
-      } catch (e) {}
-    }
+    let currentTrackIndex = 0;
+    let isInitialized = false;
+    let audioCtx, analyser, dataArray, sourceNode;
 
-    function drawVisualizer() {
-      canvas.width = canvas.parentElement.clientWidth;
-      canvas.height = canvas.parentElement.clientHeight;
-      function render() {
-        animId = requestAnimationFrame(render);
-        ctx.fillStyle = '#03070e';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        if (analyser && !audio.paused) {
-          analyser.getByteFrequencyData(dataArray);
-          const barWidth = (canvas.width / dataArray.length) * 1.5;
-          let x = 0;
-          for (let i = 0; i < dataArray.length; i++) {
-            const barHeight = (dataArray[i] / 255) * canvas.height * 0.85;
-            const grad = ctx.createLinearGradient(0, canvas.height, 0, 0);
-            grad.addColorStop(0, '#38bdf8'); grad.addColorStop(1, '#a855f7');
-            ctx.fillStyle = grad;
-            ctx.fillRect(x, canvas.height - barHeight, barWidth - 2, barHeight);
-            x += barWidth;
-          }
-        } else {
-          ctx.strokeStyle = '#1c4b8a'; ctx.lineWidth = 2;
-          ctx.beginPath(); ctx.moveTo(0, canvas.height/2); ctx.lineTo(canvas.width, canvas.height/2); ctx.stroke();
+    fetch('beats.json')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.length > 0) {
+          tracks = data;
+          renderTracklist();
+          loadTrack(0);
         }
-      }
-      cancelAnimationFrame(animId); render();
-    }
+      })
+      .catch(() => {
+        renderTracklist();
+        loadTrack(0);
+      });
 
-    fetch('beats.json').then(res => res.json()).then(data => { allBeats = data; renderBeats(allBeats); drawVisualizer(); });
-
-    function renderBeats(beats) {
-      const container = document.getElementById('beat-list');
-      container.innerHTML = '';
-      if(beats.length === 0) { container.innerHTML = '<p class="no-results">No beats found.</p>'; return; }
-      beats.forEach(beat => {
-        const card = document.createElement('div');
-        card.className = `beat-card ${currentPlayingId === beat.id ? 'playing' : ''}`;
-        card.innerHTML = `
-          <div class="card-left">
-            <button class="card-play-btn" onclick="playBeat('${beat.audioUrl}', '${beat.title.replace(/'/g, "\\'")}', '', '${beat.id}')">
-              ${currentPlayingId === beat.id && !audio.paused ? '&#10074;&#10074;' : '&#9658;'}
-            </button>
-            <div class="beat-info">
-              <h3>${beat.title}</h3>
-              
-            </div>
-          </div>
-          <div class="card-right">
-            <span class="price-tag">${beat.price || '$25'}</span>
-            <a href="${beat.stripeLink}" target="_blank" class="buy-card-btn">Instant Buy</a>
-          </div>
-        `;
-        container.appendChild(card);
+    function renderTracklist() {
+      trackListEl.innerHTML = '';
+      tracks.forEach((track, index) => {
+        const div = document.createElement('div');
+        div.className = 'track-item' + (index === currentTrackIndex ? ' active' : '');
+        div.innerHTML = `<span>${track.title || track.name}</span>`;
+        div.addEventListener('click', () => {
+          currentTrackIndex = index;
+          loadTrack(currentTrackIndex);
+          audio.play();
+          updateActiveTrackUI();
+        });
+        trackListEl.appendChild(div);
       });
     }
 
-    function playBeat(url, title, bpm, id) {
-      initVisualizer();
+    function loadTrack(index) {
+      const track = tracks[index];
+      audio.src = track.file || track.url;
+      nowPlayingText.innerText = "Now Playing: " + (track.title || track.name);
+      updateActiveTrackUI();
+    }
+
+    function updateActiveTrackUI() {
+      const items = trackListEl.querySelectorAll('.track-item');
+      items.forEach((item, index) => {
+        if (index === currentTrackIndex) {
+          item.classList.add('active');
+        } else {
+          item.classList.remove('active');
+        }
+      });
+    }
+
+    playPauseBtn.addEventListener('click', () => {
+      if (!isInitialized) initAudio();
+      if (audio.paused) {
+        audio.play();
+        playPauseBtn.innerText = "Pause";
+      } else {
+        audio.pause();
+        playPauseBtn.innerText = "Play";
+      }
+    });
+
+    audio.addEventListener('play', () => {
+      playPauseBtn.innerText = "Pause";
       if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-      if (currentPlayingId === id) { togglePlayMain(); return; }
-      currentPlayingId = id; audio.src = url; audio.play();
-      sideTitle.innerText = title; sideBpm.innerText = bpm + " BPM";
-      playPauseBtn.innerHTML = "&#10074;&#10074;";
-      renderBeats(getFilteredBeats());
+    });
+
+    audio.addEventListener('pause', () => {
+      playPauseBtn.innerText = "Play";
+    });
+
+    audio.addEventListener('timeupdate', () => {
+      if (audio.duration) {
+        progressBar.value = (audio.currentTime / audio.duration) * 100;
+        currentTimeEl.innerText = formatTime(audio.currentTime);
+        durationEl.innerText = formatTime(audio.duration);
+      }
+    });
+
+    progressBar.addEventListener('input', () => {
+      if (audio.duration) {
+        audio.currentTime = (progressBar.value / 100) * audio.duration;
+      }
+    });
+
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
     }
 
-    function togglePlayMain() {
-      if (!audio.src) return;
-      initVisualizer();
-      if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-      if (audio.paused) { audio.play(); playPauseBtn.innerHTML = "&#10074;&#10074;"; }
-      else { audio.pause(); playPauseBtn.innerHTML = "&#9658;"; }
-      renderBeats(getFilteredBeats());
+    // --- 60 FPS WMP9 Canvas Visualizer ---
+    const canvas = document.getElementById('wmpVisualizer');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+      canvas.width = canvas.clientWidth * window.devicePixelRatio;
+      canvas.height = canvas.clientHeight * window.devicePixelRatio;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function initAudio() {
+      if (isInitialized) return;
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 64;
+      dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+      sourceNode = audioCtx.createMediaElementSource(audio);
+      sourceNode.connect(analyser);
+      analyser.connect(audioCtx.destination);
+      isInitialized = true;
     }
 
-    function stopAudio() {
-      audio.pause(); audio.currentTime = 0;
-      playPauseBtn.innerHTML = "&#9658;"; sideTitle.innerText = "Stopped"; sideBpm.innerText = "";
-      renderBeats(getFilteredBeats());
+    let phase = 0;
+
+    function drawVisualizer() {
+      requestAnimationFrame(drawVisualizer);
+
+      ctx.fillStyle = 'rgba(0, 4, 12, 0.25)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      if (!analyser) return;
+      analyser.getByteFrequencyData(dataArray);
+
+      let bassSum = 0;
+      for (let i = 0; i < 6; i++) bassSum += dataArray[i];
+      let bassEnergy = bassSum / 6;
+
+      phase += 0.03 + (bassEnergy / 5000);
+
+      const width = canvas.width;
+      const height = canvas.height;
+      const centerY = height / 2;
+
+      const ribbons = [
+        { color: 'rgba(0, 162, 255, 0.8)', speed: 1.0, freq: 0.008, amp: 0.35 },
+        { color: 'rgba(0, 230, 255, 0.6)', speed: 1.3, freq: 0.012, amp: 0.25 },
+        { color: 'rgba(100, 80, 255, 0.5)', speed: 0.7, freq: 0.005, amp: 0.45 }
+      ];
+
+      ribbons.forEach((r) => {
+        ctx.beginPath();
+        ctx.lineWidth = 3 * window.devicePixelRatio;
+        ctx.strokeStyle = r.color;
+
+        for (let x = 0; x <= width; x += 4 * window.devicePixelRatio) {
+          let binIndex = Math.floor((x / width) * dataArray.length);
+          let freqValue = dataArray[binIndex] || 0;
+
+          let wave1 = Math.sin(x * r.freq + phase * r.speed);
+          let wave2 = Math.cos(x * (r.freq * 0.5) - phase * 0.5);
+          
+          let displacement = (wave1 + wave2) * (height * r.amp) * (0.2 + (freqValue / 255) * 0.8);
+          let y = centerY + displacement;
+
+          if (x === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      });
     }
 
-    function updateProgress() {
-      if (audio.duration) progressBar.style.width = (audio.currentTime / audio.duration) * 100 + '%';
-    }
-
-    function seekAudio(e) {
-      const rect = e.currentTarget.getBoundingClientRect();
-      audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
-    }
-
-    function songEnded() { playPauseBtn.innerHTML = "&#9658;"; renderBeats(getFilteredBeats()); }
-    function filterBeats() { renderBeats(getFilteredBeats()); }
-    function getFilteredBeats() {
-      const query = document.getElementById('searchInput').value.toLowerCase();
-      return allBeats.filter(b => b.title.toLowerCase().includes(query));
-    }
-    window.addEventListener('resize', drawVisualizer);
+    drawVisualizer();
   </script>
 </body>
 </html>
