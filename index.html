@@ -324,12 +324,7 @@
     const trackListContainer = document.getElementById('trackListContainer');
     const searchInput = document.getElementById('searchInput');
 
-    let tracks = [
-      { title: "Turnt", file: "turnt.mp3", price: "$25" },
-      { title: "Drugs Frm Egypt", file: "drugs.mp3", price: "$25" },
-      { title: "To Da Moon", file: "todamoon.mp3", price: "$25" },
-      { title: "Gas Em Up", file: "gasemup.mp3", price: "$25" }
-    ];
+    let tracks = [];
     let currentTrackIndex = 0;
     let isInitialized = false;
     let audioCtx, analyser, dataArray, sourceNode;
@@ -343,10 +338,7 @@
           loadTrack(0);
         }
       })
-      .catch(() => {
-        renderTracks(tracks);
-        loadTrack(0);
-      });
+      .catch(err => console.error("Error loading beats.json:", err));
 
     function renderTracks(list) {
       trackListContainer.innerHTML = '';
@@ -398,17 +390,14 @@
       if (!isInitialized) initAudio();
       if (audio.paused) {
         audio.play();
-        playPauseBtn.innerText = "&#10074;&#10074;";
       } else {
         audio.pause();
-        playPauseBtn.innerText = "&#9658;";
       }
     });
 
     stopBtn.addEventListener('click', () => {
       audio.pause();
       audio.currentTime = 0;
-      playPauseBtn.innerText = "&#9658;";
     });
 
     audio.addEventListener('play', () => {

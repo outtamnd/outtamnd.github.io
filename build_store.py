@@ -1,67 +1,509 @@
-import difflib
-import json
 import os
-import re
 
-print("Running 100% Coverage Fuzzy BPM Matcher...")
+HTML_TEMPLATE = """<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Windows Media Player - Outtamnd Beat Catalog</title>
+  <style>
+    /* Windows Media Player 9 / XP Silver-Blue Theme */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background: url('bliss.jpg') no-repeat center center fixed;
+      background-size: cover;
+      font-family: Tahoma, Arial, sans-serif;
+      color: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 10px;
+    }
+    .wmp-window {
+      width: 100%;
+      max-width: 900px;
+      background: linear-gradient(to bottom, #d6dfef 0%, #b0c4de 100%);
+      border: 3px solid;
+      border-color: #ffffff #7190b9 #7190b9 #ffffff;
+      box-shadow: 4px 4px 15px rgba(0,0,0,0.4);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .wmp-titlebar {
+      background: linear-gradient(to right, #0055ea 0%, #3d8bff 50%, #0055ea 100%);
+      color: white;
+      padding: 6px 10px;
+      font-weight: bold;
+      font-size: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      text-shadow: 1px 1px #002366;
+    }
+    .wmp-window-controls span {
+      background: #d6dfef;
+      color: #000;
+      border: 1px solid #ffffff;
+      border-color: #ffffff #002366 #002366 #ffffff;
+      padding: 0px 5px;
+      font-size: 10px;
+      margin-left: 2px;
+      cursor: pointer;
+    }
+    .wmp-menubar {
+      background: #ECE9D8;
+      padding: 3px 6px;
+      font-size: 11px;
+      border-bottom: 1px solid #c5d4ef;
+      display: flex;
+      gap: 12px;
+    }
+    .wmp-menubar span {
+      cursor: pointer;
+    }
+    .wmp-menubar span:hover {
+      background: #3d8bff;
+      color: white;
+    }
+    .wmp-body {
+      display: grid;
+      grid-template-columns: 180px 1fr 220px;
+      background: #fff;
+      border-top: 1px solid #7190b9;
+      border-bottom: 1px solid #7190b9;
+      min-height: 380px;
+    }
+    @media (max-width: 768px) {
+      .wmp-body {
+        grid-template-columns: 1fr;
+      }
+      .wmp-sidebar, .wmp-right-panel {
+        display: none;
+      }
+    }
+    .wmp-sidebar {
+      background: linear-gradient(to bottom, #f0f4f9 0%, #d8e4f5 100%);
+      border-right: 1px solid #7190b9;
+      padding: 10px 0;
+    }
+    .sidebar-heading {
+      font-size: 11px;
+      font-weight: bold;
+      color: #002366;
+      padding: 4px 12px;
+      margin-bottom: 4px;
+    }
+    .sidebar-item {
+      font-size: 11px;
+      padding: 4px 12px;
+      cursor: pointer;
+      color: #000;
+    }
+    .sidebar-item:hover {
+      background: #3d8bff;
+      color: white;
+    }
+    .sidebar-item.active {
+      font-weight: bold;
+      color: #0055ea;
+    }
+    .wmp-main {
+      padding: 12px;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      overflow-y: auto;
+      max-height: 420px;
+    }
+    .search-bar {
+      width: 100%;
+      padding: 5px 8px;
+      font-size: 11px;
+      border: 1px solid #7190b9;
+      background: #fff;
+    }
+    .track-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 8px;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .track-row:hover {
+      background-color: #eef3fc;
+    }
+    .track-row.active {
+      background-color: #3d8bff;
+      color: white;
+    }
+    .track-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .mini-play-btn {
+      background: linear-gradient(to bottom, #f9f9f9 0%, #dcdcdc 100%);
+      border: 1px solid #707070;
+      width: 20px;
+      height: 20px;
+      font-size: 9px;
+      cursor: pointer;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .track-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .price-tag {
+      font-size: 11px;
+      font-weight: bold;
+      color: #333;
+    }
+    .track-row.active .price-tag, .track-row.active .track-title {
+      color: white;
+    }
+    .buy-btn {
+      background: linear-gradient(to bottom, #e6f4ea 0%, #ceead6 100%);
+      border: 1px solid #137333;
+      color: #137333;
+      padding: 3px 8px;
+      font-size: 11px;
+      font-weight: bold;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    .buy-btn:hover {
+      background: #137333;
+      color: white;
+    }
+    .wmp-right-panel {
+      background: #000000;
+      border-left: 1px solid #405060;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 10px;
+      color: white;
+    }
+    .visualizer-box {
+      width: 100%;
+      height: 180px;
+      background-color: #000000;
+      border: 2px solid;
+      border-color: #405060 #ffffff #ffffff #405060;
+      position: relative;
+      overflow: hidden;
+    }
+    #wmpVisualizer {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    .now-playing-panel {
+      font-size: 11px;
+      color: #a0c0f0;
+      margin-top: 10px;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .wmp-footer {
+      background: linear-gradient(to bottom, #d6dfef 0%, #b0c4de 100%);
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-top: 1px solid #ffffff;
+    }
+    .transport-controls {
+      display: flex;
+      gap: 4px;
+    }
+    .wmp-btn {
+      background: linear-gradient(to bottom, #f9f9f9 0%, #dcdcdc 100%);
+      border: 1px solid #707070;
+      padding: 3px 8px;
+      font-size: 11px;
+      cursor: pointer;
+      font-weight: bold;
+      border-radius: 2px;
+    }
+    .wmp-btn:active {
+      background: linear-gradient(to bottom, #dcdcdc 0%, #f9f9f9 100%);
+    }
+    .progress-container {
+      flex-grow: 1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .time-display {
+      font-size: 10px;
+      color: #002366;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
 
-if os.path.exists("beats.json"):
-  with open("beats.json", "r", encoding="utf-8") as f:
-    beats = json.load(f)
-else:
-  print("Error: beats.json not found!")
-  exit()
+  <div class="wmp-window">
+    <div class="wmp-titlebar">
+      <span>Windows Media Player &mdash; Outtamnd Beat Catalog</span>
+      <div class="wmp-window-controls">
+        <span>_</span><span>&#x25A1;</span><span>&times;</span>
+      </div>
+    </div>
+    <div class="wmp-menubar">
+      <span>File</span><span>View</span><span>Play</span><span>Tools</span><span>Help</span>
+    </div>
+    
+    <div class="wmp-body">
+      <!-- Left Sidebar -->
+      <div class="wmp-sidebar">
+        <div class="sidebar-heading">Now Playing</div>
+        <div class="sidebar-item active">Media Guide</div>
+        <div class="sidebar-item">Copy from CD</div>
+        <div class="sidebar-item">Media Library</div>
+        <div class="sidebar-item">Radio Tuner</div>
+      </div>
 
-local_beats_path = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "..", "beats")
-)
-local_files_bpms = []
+      <!-- Main Catalog Area -->
+      <div class="wmp-main">
+        <input type="text" class="search-bar" id="searchInput" placeholder="Search catalog...">
+        <div id="trackListContainer"></div>
+      </div>
 
-if os.path.exists(local_beats_path):
-  print(f"Reading local files from: {local_beats_path}")
-  for filename in os.listdir(local_beats_path):
-    if filename.lower().endswith((".mp3", ".wav", ".zip", ".m4a", ".flac")):
-      match = re.search(
-          r'(\d{2,3})\s*\.(?:mp3|wav|zip|m4a|flac)$', filename, re.IGNORECASE
-      )
-      if not match:
-        match = re.search(r'(\d{2,3})', filename)
+      <!-- Right Visualizer Panel -->
+      <div class="wmp-right-panel">
+        <div style="font-size: 10px; color: #7190b9; margin-bottom: 4px; font-weight: bold;">VISUALIZATION</div>
+        <div class="visualizer-box">
+          <canvas id="wmpVisualizer"></canvas>
+        </div>
+        <div class="now-playing-panel" id="nowPlayingText">Select a track</div>
+      </div>
+    </div>
 
-      if match:
-        bpm = match.group(1)
-        clean_fn = re.sub(r'\(.*?\)', '', filename.lower())
-        clean_fn = re.sub(r'[^a-z0-9]', '', clean_fn)
-        local_files_bpms.append((clean_fn, bpm))
-else:
-  print("WARNING: Local beats folder not found!")
+    <!-- Bottom Controls Footer -->
+    <div class="wmp-footer">
+      <audio id="audioPlayer"></audio>
+      <div class="transport-controls">
+        <button class="wmp-btn" id="prevBtn">&#124;&;</button>
+        <button class="wmp-btn" id="playPauseBtn">&#9658;</button>
+        <button class="wmp-btn" id="stopBtn">&#9632;</button>
+        <button class="wmp-btn" id="nextBtn">&;&#124;</button>
+      </div>
+      <div class="progress-container">
+        <span class="time-display" id="currentTime">0:00</span>
+        <input type="range" id="progressBar" value="0" max="100" style="flex-grow: 1; accent-color: #0055ea;">
+        <span class="time-display" id="duration">0:00</span>
+      </div>
+    </div>
+  </div>
 
-matched_count = 0
-clean_filenames = [item[0] for item in local_files_bpms]
+  <script>
+    const audio = document.getElementById('audioPlayer');
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const progressBar = document.getElementById('progressBar');
+    const currentTimeEl = document.getElementById('currentTime');
+    const durationEl = document.getElementById('duration');
+    const nowPlayingText = document.getElementById('nowPlayingText');
+    const trackListContainer = document.getElementById('trackListContainer');
+    const searchInput = document.getElementById('searchInput');
 
-for beat in beats:
-  raw_title = beat.get("title", "").lower()
-  beat_clean = re.sub(r'[^a-z0-9]', '', raw_title)
+    let tracks = [];
+    let currentTrackIndex = 0;
+    let isInitialized = false;
+    let audioCtx, analyser, dataArray, sourceNode;
 
-  found_bpm = "140"
+    fetch('beats.json')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.length > 0) {
+          tracks = data;
+          renderTracks(tracks);
+          loadTrack(0);
+        }
+      })
+      .catch(err => console.error("Error loading beats.json:", err));
 
-  if clean_filenames:
-    matches = difflib.get_close_matches(
-        beat_clean, clean_filenames, n=1, cutoff=0.05
-    )
-    if matches:
-      best_match = matches[0]
-      for cf, bpm in local_files_bpms:
-        if cf == best_match:
-          found_bpm = bpm
-          matched_count += 1
-          break
+    function renderTracks(list) {
+      trackListContainer.innerHTML = '';
+      list.forEach((track, index) => {
+        const row = document.createElement('div');
+        row.className = 'track-row' + (index === currentTrackIndex ? ' active' : '');
+        row.innerHTML = `
+          <div class="track-info">
+            <button class="mini-play-btn">&#9658;</button>
+            <span class="track-title">${track.title || track.name}</span>
+          </div>
+          <div class="track-actions">
+            <span class="price-tag">${track.price || '$25'}</span>
+            <button class="buy-btn" onclick="event.stopPropagation(); alert('Redirecting to checkout for ${track.title || track.name}...');">Instant Buy</button>
+          </div>
+        `;
+        row.addEventListener('click', () => {
+          currentTrackIndex = index;
+          loadTrack(currentTrackIndex);
+          audio.play();
+        });
+        trackListContainer.appendChild(row);
+      });
+    }
 
-  beat["bpm"] = found_bpm
+    searchInput.addEventListener('input', (e) => {
+      const term = e.target.value.toLowerCase();
+      const filtered = tracks.filter(t => (t.title || t.name).toLowerCase().includes(term));
+      renderTracks(filtered);
+    });
 
-with open("beats.json", "w", encoding="utf-8") as f:
-  json.dump(beats, f, indent=2)
+    function loadTrack(index) {
+      const track = tracks[index];
+      if (!track) return;
+      audio.src = track.file || track.url;
+      nowPlayingText.innerText = "Now Playing: " + (track.title || track.name);
+      highlightActiveTrack();
+    }
 
-print(
-    f"--- DONE: Assigned BPMs to all {len(beats)} tracks ({matched_count}"
-    f" matched)! ---"
-)
+    function highlightActiveTrack() {
+      const rows = trackListContainer.querySelectorAll('.track-row');
+      rows.forEach((row, i) => {
+        if (i === currentTrackIndex) row.classList.add('active');
+        else row.classList.remove('active');
+      });
+    }
+
+    playPauseBtn.addEventListener('click', () => {
+      if (!isInitialized) initAudio();
+      if (audio.paused) {
+        audio.play();
+      } else {
+        audio.pause();
+      }
+    });
+
+    stopBtn.addEventListener('click', () => {
+      audio.pause();
+      audio.currentTime = 0;
+    });
+
+    audio.addEventListener('play', () => {
+      playPauseBtn.innerText = "&#10074;&#10074;";
+      if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+    });
+
+    audio.addEventListener('pause', () => {
+      playPauseBtn.innerText = "&#9658;";
+    });
+
+    audio.addEventListener('timeupdate', () => {
+      if (audio.duration) {
+        progressBar.value = (audio.currentTime / audio.duration) * 100;
+        currentTimeEl.innerText = formatTime(audio.currentTime);
+        durationEl.innerText = formatTime(audio.duration);
+      }
+    });
+
+    progressBar.addEventListener('input', () => {
+      if (audio.duration) {
+        audio.currentTime = (progressBar.value / 100) * audio.duration;
+      }
+    });
+
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    }
+
+    // --- 60 FPS Visualizer ---
+    const canvas = document.getElementById('wmpVisualizer');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+      canvas.width = canvas.clientWidth * window.devicePixelRatio;
+      canvas.height = canvas.clientHeight * window.devicePixelRatio;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function initAudio() {
+      if (isInitialized) return;
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 64;
+      dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+      sourceNode = audioCtx.createMediaElementSource(audio);
+      sourceNode.connect(analyser);
+      analyser.connect(audioCtx.destination);
+      isInitialized = true;
+    }
+
+    let phase = 0;
+    function drawVisualizer() {
+      requestAnimationFrame(drawVisualizer);
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      if (!analyser) return;
+      analyser.getByteFrequencyData(dataArray);
+
+      let bassSum = 0;
+      for (let i = 0; i < 4; i++) bassSum += dataArray[i];
+      let bassEnergy = bassSum / 4;
+      phase += 0.04 + (bassEnergy / 4000);
+
+      const width = canvas.width;
+      const height = canvas.height;
+      const centerY = height / 2;
+
+      const ribbons = [
+        { color: 'rgba(0, 162, 255, 0.9)', speed: 1.2, freq: 0.01, amp: 0.4 },
+        { color: 'rgba(0, 230, 255, 0.7)', speed: 0.8, freq: 0.015, amp: 0.3 }
+      ];
+
+      ribbons.forEach(r => {
+        ctx.beginPath();
+        ctx.lineWidth = 2.5 * window.devicePixelRatio;
+        ctx.strokeStyle = r.color;
+        for (let x = 0; x <= width; x += 4 * window.devicePixelRatio) {
+          let bin = Math.floor((x / width) * dataArray.length);
+          let val = dataArray[bin] || 0;
+          let disp = Math.sin(x * r.freq + phase * r.speed) * (height * r.amp) * (0.3 + (val/255)*0.7);
+          let y = centerY + disp;
+          if (x === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      });
+    }
+    drawVisualizer();
+  </script>
+</body>
+</html>
+"""
+
+def build():
+    print("Building clean Netlify-style index.html...")
+    with open("index.html", "w", encoding="utf-8") as f:
+        f.write(HTML_TEMPLATE.strip())
+    print("Build complete! index.html generated successfully.")
+
+if __name__ == "__main__":
+    build()
