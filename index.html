@@ -42,15 +42,17 @@
                     url: "https://cdn.jsdelivr.net/gh/captbaritone/webamp@master/packages/webamp/demo/skins/Internet_Archive_Classic.wsz",
                     name: "Internet Archive Classic"
                 }
-            ]
+            ],
+            __initialWindowLayout: {
+                main: { position: { x: 0, y: 0 } },
+                equalizer: { position: { x: 0, y: 116 } },
+                playlist: { position: { x: 0, y: 232 } },
+                milkdrop: { position: { x: 280, y: 0 }, closed: false }
+            }
         });
 
-        webamp.renderWhenReady(document.getElementById('app')).then(() => {
-            console.log("Webamp loaded, opening Milkdrop...");
-            // Force open the Milkdrop visualizer window immediately on load
-            setTimeout(() => {
-                webamp.store.dispatch({ type: "TOGGLE_MILKDROP_WINDOW" });
-            }, 200);
+        webamp.renderInto(document.getElementById('app')).then(() => {
+            console.log("Webamp with Milkdrop successfully rendered.");
         });
     </script>
 </body>
