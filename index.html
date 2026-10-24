@@ -3,27 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Outtamnd's beats</title>
     <script>
-        // Bulletproof title lock against Webamp's React updates
-        const DESIRED_TITLE = "Outtamnd's beats";
-        
-        function lockTitle() {
-            if (document.title !== DESIRED_TITLE) {
-                document.title = DESIRED_TITLE;
-            }
-        }
-        
-        setInterval(lockTitle, 20);
-        
-        window.addEventListener('DOMContentLoaded', () => {
-            lockTitle();
-            const titleElement = document.querySelector('head > title');
-            if (titleElement) {
-                new MutationObserver(lockTitle).observe(titleElement, { childList: true, subtree: true, characterData: true });
-            }
+        // Absolute title lockdown before any library loads
+        Object.defineProperty(document, 'title', {
+            get: function() { return "Outtamnd's beats"; },
+            set: function() {},
+            configurable: true
         });
     </script>
+    <title>Outtamnd's beats</title>
     <style>
         body {
             background-color: #0d0d0d;
