@@ -373,7 +373,6 @@
     let isInitialized = false;
     let audioCtx, analyser, dataArray, sourceNode;
 
-    // Fetch beats.json with a fallback if it fails
     fetch('beats.json')
       .then(res => res.json())
       .then(data => {
@@ -392,8 +391,7 @@
 
     function loadFallback() {
       tracks = [
-        { title: "turnt", file: "MP3S/turnt.mp3", price: "$25" },
-        { title: "blast off", file: "MP3S/blast%20off.mp3", price: "$25" }
+        { title: "turnt", file: "MP3S/turnt.mp3", price: "$25" }
       ];
       renderTracks(tracks);
       loadTrack(0);
@@ -446,6 +444,9 @@
       }
       
       audio.src = src;
+      audio.load(); // Forces the audio element to register the new source
+      console.log("🎵 Loading audio source URL:", audio.src);
+      
       nowPlayingText.innerText = "Now Playing: " + (track.title || track.name || "Track");
       highlightActiveTrack();
     }
