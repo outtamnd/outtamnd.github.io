@@ -3,7 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Outtamnd - Beat Vault (Winamp 2)</title>
+    <title>Outtamnd's beats</title>
+    <script>
+        // Lock the browser tab title permanently
+        Object.defineProperty(document, 'title', {
+            get: () => "Outtamnd's beats",
+            set: () => {},
+            configurable: true
+        });
+    </script>
     <style>
         body {
             background-color: #0d0d0d;
@@ -16,10 +24,6 @@
             justify-content: center;
             align-items: center;
             font-family: sans-serif;
-        }
-        #app {
-            transform: scale(1.5);
-            transform-origin: center center;
         }
     </style>
     <!-- Webamp Bundle -->
@@ -46,7 +50,7 @@
         });
 
         webamp.renderWhenReady(document.getElementById('app')).then(() => {
-            console.log("Webamp scaled and loaded successfully.");
+            console.log("Webamp loaded successfully.");
         });
     </script>
 </body>
