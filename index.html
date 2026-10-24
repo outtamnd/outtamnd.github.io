@@ -373,6 +373,7 @@
     let isInitialized = false;
     let audioCtx, analyser, dataArray, sourceNode;
 
+    // Fetch beats.json with a fallback if it fails
     fetch('beats.json')
       .then(res => res.json())
       .then(data => {
@@ -380,25 +381,39 @@
           tracks = data;
           renderTracks(tracks);
           loadTrack(0);
+        } else {
+          loadFallback();
         }
       })
       .catch(err => {
-        console.error("Error loading beats.json:", err);
+        console.warn("Could not load beats.json, using fallback:", err);
+        loadFallback();
       });
+
+    function loadFallback() {
+      tracks = [
+        { title: "turnt", file: "MP3S/turnt.mp3", price: "$25" },
+        { title: "blast off", file: "MP3S/blast%20off.mp3", price: "$25" }
+      ];
+      renderTracks(tracks);
+      loadTrack(0);
+    }
 
     function renderTracks(list) {
       trackListContainer.innerHTML = '';
       list.forEach((track, index) => {
         const row = document.createElement('div');
         row.className = 'track-row' + (index === currentTrackIndex ? ' active' : '');
+        const title = track.title || track.name || "Unknown Track";
+        const price = track.price || '$25';
         row.innerHTML = `
           <div class="track-info">
             <button class="mini-play-btn">&#9658;</button>
-            <span class="track-title">${track.title || track.name}</span>
+            <span class="track-title">${title}</span>
           </div>
           <div class="track-actions">
-            <span class="price-tag">${track.price || '$25'}</span>
-            <button class="buy-btn" onclick="event.stopPropagation(); alert('Redirecting to checkout for ${track.title || track.name}...');">Instant Buy</button>
+            <span class="price-tag">${price}</span>
+            <button class="buy-btn" onclick="event.stopPropagation(); alert('Redirecting to checkout for ${title}...');">Instant Buy</button>
           </div>
         `;
         row.addEventListener('click', () => {
@@ -412,7 +427,7 @@
 
     searchInput.addEventListener('input', (e) => {
       const term = e.target.value.toLowerCase();
-      const filtered = tracks.filter(t => (t.title || t.name).toLowerCase().includes(term));
+      const filtered = tracks.filter(t => (t.title || t.name || "").toLowerCase().includes(term));
       renderTracks(filtered);
     });
 
@@ -420,14 +435,18 @@
       const track = tracks[index];
       if (!track) return;
       
-      // Auto-formatting relative file paths
-      let src = track.file || track.url;
-      if (src && !src.startsWith('http') && !src.startsWith('/')) {
+      let src = track.file || track.url || track.path;
+      if (!src) {
+        const tName = track.title || track.name || "track";
+        src = `MP3S/${encodeURIComponent(tName)}.mp3`;
+      }
+      
+      if (!src.startsWith('http') && !src.startsWith('/') && !src.startsWith('./')) {
         src = './' + src;
       }
       
       audio.src = src;
-      nowPlayingText.innerText = "Now Playing: " + (track.title || track.name);
+      nowPlayingText.innerText = "Now Playing: " + (track.title || track.name || "Track");
       highlightActiveTrack();
     }
 
@@ -466,7 +485,7 @@
 
     nextBtn.addEventListener('click', () => {
       if (tracks.length === 0) return;
-      currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
+      currentTrackIndex = (currentTrackIndex + 1 + tracks.length) % tracks.length;
       loadTrack(currentTrackIndex);
       playAudio();
     });
