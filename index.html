@@ -6,7 +6,7 @@
     <title>Outtamnd - Beat Vault (Winamp 2)</title>
     <style>
         body {
-            background-color: #121212;
+            background-color: #0d0d0d;
             margin: 0;
             padding: 0;
             overflow: hidden;
@@ -15,9 +15,6 @@
             font-family: sans-serif;
         }
         #app {
-            position: absolute;
-            top: 0;
-            left: 0;
             width: 100%;
             height: 100%;
         }
@@ -36,9 +33,16 @@
 
         const webamp = new Webamp({
             initialTracks: tracks,
-            butterchurn: {
-                butterchurn: window.butterchurn,
-                getPresets: () => window.butterchurnPresets.getPresets(),
+            __canHandleMilkdrop: true,
+            __butterchurnOptions: {
+                importButterchurn: () => Promise.resolve(window.butterchurn),
+                getPresets: () => {
+                    const presets = window.butterchurnPresets.getPresets();
+                    return Object.keys(presets).map((name) => ({
+                        name: name,
+                        butterchurnPresetObject: presets[name]
+                    }));
+                }
             },
             availableSkins: [
                 {
@@ -49,18 +53,12 @@
                     url: "https://cdn.jsdelivr.net/gh/captbaritone/webamp@master/packages/webamp/demo/skins/Internet_Archive_Classic.wsz",
                     name: "Internet Archive Classic"
                 }
-            ],
-            __canHandleMilkdrop: true,
-            __initialWindowLayout: {
-                main: { spawn: true, closed: false },
-                equalizer: { spawn: true, closed: false },
-                playlist: { spawn: true, closed: false },
-                milkdrop: { spawn: true, closed: false }
-            }
+            ]
         });
 
         webamp.renderWhenReady(document.getElementById('app')).then(() => {
-            console.log("Webamp mounted with Milkdrop.");
+            // Automatically open Milkdrop Visualizer window on launch
+            webamp.store.dispatch({ type: "TOGGLE_MILKDROP_WINDOW" });
         });
     </script>
 </body>
