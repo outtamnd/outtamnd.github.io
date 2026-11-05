@@ -1,5 +1,157 @@
 [
     {
+        "id": "588",
+        "title": "seperate 140 gmin",
+        "genre": "wavy",
+        "bpm": "140",
+        "file": "audio/(wavy) outtamnd - seperate 140 gmin.mp3",
+        "price": "25.00"
+    },
+    {
+        "id": "587",
+        "title": "swag on",
+        "genre": "trap, sampled",
+        "bpm": "147",
+        "file": "audio/(trap, sampled) outtamnd + 1samhaskins - swag on 147.mp3",
+        "price": "25.00"
+    },
+    {
+        "id": "586",
+        "title": "star",
+        "genre": "trap, glo",
+        "bpm": "144",
+        "file": "audio/(trap, glo) outtamnd + ls8 - star 144.mp3",
+        "price": "25.00"
+    },
+    {
+        "id": "585",
+        "title": "outtamnd + rollon tictactoe",
+        "genre": "trap, beezy",
+        "bpm": "145",
+        "file": "audio/(trap, beezy) outtamnd + rollon tictactoe 145.mp3",
+        "price": "25.00"
+    },
+    {
+        "id": "584",
+        "title": "miss independent",
+        "genre": "philly drill, sampled",
+        "bpm": "166",
+        "file": "audio/(philly drill, sampled) outtamnd - miss independent 166.mp3",
+        "price": "25.00"
+    },
+    {
+        "id": "583",
+        "title": "slim",
+        "genre": "florida, detroit",
+        "bpm": "164",
+        "file": "audio/(florida, detroit) outtamnd + zzzeta - slim 164.mp3",
+        "price": "25.00"
+    },
+    {
+        "id": "582",
+        "title": "forget it",
+        "genre": "emotional, philly",
+        "bpm": "144",
+        "file": "audio/(emotional, philly) outtamnd + plyo - forget it 144.mp3",
+        "price": "25.00"
+    },
+    {
+        "id": "581",
+        "title": "crisis",
+        "genre": "emotional, philly drill",
+        "bpm": "150",
+        "file": "audio/(emotional, philly drill) outtamnd + t9nishh + a4key - crisis 150.mp3",
+        "price": "25.00"
+    },
+    {
+        "id": "580",
+        "title": "bands up",
+        "genre": "detroit, florida",
+        "bpm": "169",
+        "file": "audio/(detroit, florida) outtamnd + plyo - bands up 169.mp3",
+        "price": "25.00"
+    },
+    {
+        "id": "579",
+        "title": "champ",
+        "genre": "detroit",
+        "bpm": "170",
+        "file": "audio/(detroit) outtamnd + tim4e - champ 170.mp3",
+        "price": "25.00"
+    },
+    {
+        "id": "578",
+        "title": "pay up",
+        "genre": "detroit",
+        "bpm": "162",
+        "file": "audio/(detroit) outtamnd + thankutimmy + tc - pay up 162.mp3",
+        "price": "25.00"
+    },
+    {
+        "id": "577",
+        "title": "guap",
+        "genre": "detroit",
+        "bpm": "158",
+        "file": "audio/(detroit) outtamnd + thankutimmy + tc - guap 158.mp3",
+        "price": "25.00"
+    },
+    {
+        "id": "576",
+        "title": "geekin",
+        "genre": "detroit",
+        "bpm": "165",
+        "file": "audio/(detroit) outtamnd + thankutimmy + tc - geekin 165.mp3",
+        "price": "25.00"
+    },
+    {
+        "id": "575",
+        "title": "syrup sipper",
+        "genre": "detroit",
+        "bpm": "164",
+        "file": "audio/(detroit) outtamnd + dracomadeit - syrup sipper 164.mp3",
+        "price": "25.00"
+    },
+    {
+        "id": "574",
+        "title": "trench baby",
+        "genre": "detroit",
+        "bpm": "166",
+        "file": "audio/(detroit) outtamnd + dmo - trench baby 166.mp3",
+        "price": "25.00"
+    },
+    {
+        "id": "573",
+        "title": "money counter",
+        "genre": "detroit",
+        "bpm": "150",
+        "file": "audio/(detroit) outtamnd + dmo - money counter 150.mp3",
+        "price": "25.00"
+    },
+    {
+        "id": "572",
+        "title": "lunch",
+        "genre": "detroit",
+        "bpm": "172",
+        "file": "audio/(detroit) outtamnd + dmo - lunch 172.mp3",
+        "price": "25.00"
+    },
+    {
+        "id": "571",
+        "title": "gone",
+        "genre": "detroit",
+        "bpm": "174",
+        "file": "audio/(detroit) outtamnd + dmo -  gone 174.mp3",
+        "price": "25.00"
+    },
+    {
+        "id": "570",
+        "title": "dare",
+        "genre": "detroit",
+        "bpm": "180",
+        "file": "audio/(detroit) outtamnd + dmo  - dare 180.mp3",
+        "price": "25.00"
+    },
+    {
         "title": "(2000s) outtamnd + 1ohmygon - turnt 98",
         "genre": "2000S",
         "bpm": "98",
