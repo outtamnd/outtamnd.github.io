@@ -488,15 +488,20 @@
 function renderBeats(list) {
             const container = document.getElementById('beats-container');
             
-            // Filter to keep only properly formatted beats (must have a valid title and audio path)
+            // STRICT FILTER: Only keep beats that have clean, proper metadata formatting
             const validList = list.filter(beat => {
                 const rawTitle = beat.title || '';
                 const audioFile = beat.audio || beat.filename || beat.file || '';
                 if (!rawTitle || !audioFile) return false;
-                
-                // Example validation: must have a BPM or match standard formatting
-                const hasBpm = beat.bpm || /\b\d{2,3}\s*$/.test(rawTitle);
-                return hasBpm;
+
+                // Define what counts as properly formatted:
+                // Must contain a BPM number OR be part of the tagged catalog format (e.g., contains parentheses tags like (wavy), (chaos), or artist/producer markers)
+                const hasBpm = /\b\d{2,3}\s*$/.test(rawTitle) || beat.bpm;
+                const hasTag = /^[\(\\[].*?[\\]\)]/.test(rawTitle);
+                const hasDash = rawTitle.includes(' - ');
+
+                // Keep only if it meets proper formatting criteria
+                return hasBpm || hasTag || hasDash;
             });
 
             if (validList.length === 0) {
@@ -558,7 +563,6 @@ function renderBeats(list) {
             `;
             }).join('');
         }
-
         function filterBeats() {
             const query = document.getElementById('search-input').value.toLowerCase();
             const genre = document.getElementById('genre-filter').value;
