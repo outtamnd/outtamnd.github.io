@@ -468,7 +468,7 @@
 
         window.addEventListener('DOMContentLoaded', async () => {
             try {
-                const res = await fetch('my_beats.json');
+                let res; for (const path of ['my_beats.json', './my_beats.json', '/my_beats.json', 'beats.json']) { try { res = await fetch(path); if (res.ok) break; } catch(e) {} }
                 beats = await res.json();
                 document.getElementById('beat-count-label').innerText = beats.length;
                 renderBeats(beats);
