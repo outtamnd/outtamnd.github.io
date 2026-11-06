@@ -487,18 +487,30 @@
 
 function renderBeats(list) {
             const container = document.getElementById('beats-container');
-            if (list.length === 0) {
-                container.innerHTML = '<p class="text-gray-500 text-sm text-center py-8">No beats found matching your filter.</p>';
+            
+            // Filter to keep only properly formatted beats (must have a valid title and audio path)
+            const validList = list.filter(beat => {
+                const rawTitle = beat.title || '';
+                const audioFile = beat.audio || beat.filename || beat.file || '';
+                if (!rawTitle || !audioFile) return false;
+                
+                // Example validation: must have a BPM or match standard formatting
+                const hasBpm = beat.bpm || /\b\d{2,3}\s*$/.test(rawTitle);
+                return hasBpm;
+            });
+
+            if (validList.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-sm text-center py-8">No properly formatted beats found.</p>';
                 return;
             }
 
-            container.innerHTML = list.map((beat, idx) => {
+            container.innerHTML = validList.map((beat, idx) => {
                 const audioFile = beat.audio || beat.filename || beat.file || '';
                 
                 let rawTitle = beat.title || '';
                 let detectedBpm = beat.bpm;
 
-                // 1. Extract trailing BPM if present (2 or 3 digits at the very end of the title/filename)
+                // 1. Extract trailing BPM if present
                 const bpmMatch = rawTitle.match(/\b(\d{2,3})\s*$/);
                 if (bpmMatch) {
                     if (!detectedBpm) detectedBpm = bpmMatch[1];
@@ -508,13 +520,13 @@ function renderBeats(list) {
                 // 2. Remove leading tags like (chaos), (wavy), [free], etc.
                 rawTitle = rawTitle.replace(/^[\(\\[].*?[\\]\)]\s*/g, '').trim();
 
-                // 3. Handle hyphen separators if present (e.g., "artist - title")
+                // 3. Handle hyphen separators if present
                 if (rawTitle.includes(' - ')) {
                     const parts = rawTitle.split(' - ');
                     rawTitle = parts[parts.length - 1].trim();
                 }
 
-                // 4. Optional: clean up leading "outtamnd" producer prefix if left over
+                // 4. Clean up leading producer prefix
                 rawTitle = rawTitle.replace(/^outtamnd\s+/i, '').trim();
 
                 const displayTitle = rawTitle || beat.title;
