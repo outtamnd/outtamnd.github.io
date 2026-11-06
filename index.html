@@ -469,7 +469,7 @@
         window.addEventListener('DOMContentLoaded', async () => {
             try {
                 let res; 
-                for (const path of ['my_beats.json', './my_beats.json', 'beats.json', '/my_beats.json']) { 
+                for (const path of ['beats.json', './beats.json', '/beats.json', 'my_beats.json', './my_beats.json']) { 
                     try { 
                         res = await fetch(path); 
                         if (res.ok) break; 
