@@ -485,7 +485,7 @@
             }
         });
 
-        function renderBeats(list) {
+function renderBeats(list) {
             const container = document.getElementById('beats-container');
             if (list.length === 0) {
                 container.innerHTML = '<p class="text-gray-500 text-sm text-center py-8">No beats found matching your filter.</p>';
@@ -495,28 +495,35 @@
             container.innerHTML = list.map((beat, idx) => {
                 const audioFile = beat.audio || beat.filename || beat.file || '';
                 
-                // Clean up title: keep only the track name after the dash (without leading prefix and trailing BPM)
-                let displayTitle = beat.title;
+                let rawTitle = beat.title || '';
                 let detectedBpm = beat.bpm;
-                
-                if (beat.title && beat.title.includes(' - ')) {
-                    const parts = beat.title.split(' - ');
-                    const suffix = parts[1];
-                    const match = suffix.match(/^(.*?)\s+(\d{2,3})$/);
-                    if (match) {
-                        displayTitle = match[1]; // e.g. "turnt", "drugs frm egypt"
-                        if (!detectedBpm) detectedBpm = match[2];
-                    } else {
-                        displayTitle = suffix;
-                    }
+
+                // 1. Extract trailing BPM if present (2 or 3 digits at the very end of the title/filename)
+                const bpmMatch = rawTitle.match(/\b(\d{2,3})\s*$/);
+                if (bpmMatch) {
+                    if (!detectedBpm) detectedBpm = bpmMatch[1];
+                    rawTitle = rawTitle.replace(/\b\d{2,3}\s*$/, '').trim();
                 }
 
+                // 2. Remove leading tags like (chaos), (wavy), [free], etc.
+                rawTitle = rawTitle.replace(/^[\(\\[].*?[\\]\)]\s*/g, '').trim();
+
+                // 3. Handle hyphen separators if present (e.g., "artist - title")
+                if (rawTitle.includes(' - ')) {
+                    const parts = rawTitle.split(' - ');
+                    rawTitle = parts[parts.length - 1].trim();
+                }
+
+                // 4. Optional: clean up leading "outtamnd" producer prefix if left over
+                rawTitle = rawTitle.replace(/^outtamnd\s+/i, '').trim();
+
+                const displayTitle = rawTitle || beat.title;
                 const bpmDisplay = detectedBpm ? `${detectedBpm} BPM` : '140 BPM';
 
                 return `
                 <div class="bg-cardbg border border-gray-800/90 hover:border-gray-700 transition rounded-2xl p-4 sm:p-5 flex items-center justify-between gap-4 shadow-xl group">
                     <div class="flex items-center space-x-4 min-w-0">
-                        <button onclick="playBeat('${displayTitle.replace(/'/g, "\\'")}', '${audioFile}', '${beat.genre || 'Beat'}')" class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-accent/20 border border-accent/40 group-hover:bg-accent text-accent group-hover:text-white flex items-center justify-center flex-shrink-0 transition shadow-[0_0_15px_rgba(139,92,246,0.2)]">
+                        <button onclick="playBeat('${displayTitle.replace(/'/g, "\\'")}', '${audioFile}', '${beat.genre || 'Trap'}')" class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-accent/20 border border-accent/40 group-hover:bg-accent text-accent group-hover:text-white flex items-center justify-center flex-shrink-0 transition shadow-[0_0_15px_rgba(139,92,246,0.2)]">
                             <i class="fa-solid fa-play text-sm sm:text-base"></i>
                         </button>
                         <div class="min-w-0">
