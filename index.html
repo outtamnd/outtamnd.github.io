@@ -441,7 +441,7 @@
 
     <!-- JavaScript Application Logic -->
     <script>
-        const AUDIO_BASE_URL = 'https://outtamnd.github.io/old-site/';
+        const AUDIO_BASE_URL = '';
         const MEDIAFIRE_DRUMKIT_URL = 'https://www.mediafire.com/file/brise7wzx7jg29z/%2521OUTTADRUMS_V1_OFFICIAL_DRUMKIT.zip/file';
 
         let beats = [];
@@ -469,7 +469,7 @@
         window.addEventListener('DOMContentLoaded', async () => {
             try {
                 let res; 
-                for (const path of ['/my_beats.json', 'my_beats.json', './my_beats.json', '/beats.json', 'beats.json']) { 
+                for (const path of ['my_beats.json', './my_beats.json', 'beats.json', '/my_beats.json']) { 
                     try { 
                         res = await fetch(path); 
                         if (res.ok) break; 
