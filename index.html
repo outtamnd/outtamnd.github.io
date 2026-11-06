@@ -468,7 +468,14 @@
 
         window.addEventListener('DOMContentLoaded', async () => {
             try {
-                let res; for (const path of ['my_beats.json', './my_beats.json', '/my_beats.json', 'beats.json']) { try { res = await fetch(path); if (res.ok) break; } catch(e) {} }
+                let res; 
+                for (const path of ['/my_beats.json', 'my_beats.json', './my_beats.json', '/beats.json', 'beats.json']) { 
+                    try { 
+                        res = await fetch(path); 
+                        if (res.ok) break; 
+                    } catch(e) {} 
+                }
+                if (!res || !res.ok) throw new Error('Failed to fetch beats catalog');
                 beats = await res.json();
                 document.getElementById('beat-count-label').innerText = beats.length;
                 renderBeats(beats);
@@ -577,7 +584,7 @@
                         const parts = firstBeat.title.split(' - ');
                         const suffix = parts[1];
                         const match = suffix.match(/^(.*?)\s+(\d{2,3})$/);
-                        if (match) displayTitle = match.id || match[1];
+                        if (match) displayTitle = match[1];
                         else displayTitle = suffix;
                     }
                     playBeat(displayTitle, audioFile, firstBeat.genre || 'Beat');
