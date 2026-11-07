@@ -1,1146 +1,540 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OUTTAMND | Underground Beat Vault</title>
-    <!-- Tailwind CSS CDN -->
+    <title>OUTTAMND | Underground Beats</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        darkbg: '#030508',
-                        cardbg: '#0a0e17',
-                        cardborder: '#1f2a40',
-                        accent: '#8b5cf6',
-                        accenthover: '#7c3aed'
-                    },
-                    keyframes: {
-                        sideflip: {
-                            '0%': { transform: 'rotateY(0deg)' },
-                            '100%': { transform: 'rotateY(360deg)' }
-                        },
-                        shine: {
-                            '0%': { transform: 'translateX(-150%) skewX(-20deg)' },
-                            '25%': { transform: 'translateX(150%) skewX(-20deg)' },
-                            '100%': { transform: 'translateX(150%) skewX(-20deg)' }
-                        }
-                    },
-                    animation: {
-                        sideflip: 'sideflip 7s linear infinite',
-                        shine: 'shine 4s ease-in-out infinite'
-                    }
-                }
-            }
-        }
-    </script>
-    <!-- Stripe JS SDK -->
-    <script src="https://js.stripe.com/v3/"></script>
-    <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Space Grotesk', sans-serif; background-color: #030508; color: #e5e7eb; }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #0b0f19;
+            color: #f3f4f6;
+        }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #0a0e17; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #1f2a40; border-radius: 3px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #374151; }
-        .perspective-container { perspective: 1200px; }
-        .grunge-overlay {
-            background-image: radial-gradient(rgba(139, 92, 246, 0.04) 1px, transparent 0);
-            background-size: 24px 24px;
-        }
-        .logo-shine-mask {
-            -webkit-mask-image: url('logo.png');
-            mask-image: url('logo.png');
-            -webkit-mask-size: contain;
-            mask-size: contain;
-            -webkit-mask-repeat: no-repeat;
-            mask-repeat: no-repeat;
-            -webkit-mask-position: center;
-            mask-position: center;
-        }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #0b0f19; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 3px; }
     </style>
 </head>
-<body class="bg-darkbg text-gray-100 min-h-screen flex flex-col justify-between selection:bg-accent selection:text-white grunge-overlay">
+<body class="min-h-screen flex flex-col justify-between selection:bg-purple-500 selection:text-white">
 
-    <!-- Native Audio Element with preload="auto" for mobile compatibility -->
-    <audio id="html-audio-element" preload="auto"></audio>
-
-    <!-- Top Navigation -->
-    <header class="sticky top-0 z-40 bg-darkbg/95 backdrop-blur-md border-b border-gray-900 shadow-[0_10px_30px_rgba(0,0,0,0.9)]">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <a href="#" class="flex items-center perspective-container py-2">
-                    <div class="relative animate-sideflip" style="transform-style: preserve-3d;">
-                        <img src="logo.png" alt="" class="h-14 sm:h-18 w-auto object-contain absolute top-0 left-0 select-none pointer-events-none" style="transform: translateZ(-8px); filter: brightness(0.6) contrast(1.2); opacity: 0.85;">
-                        <img src="logo.png" alt="" class="h-14 sm:h-18 w-auto object-contain absolute top-0 left-0 select-none pointer-events-none" style="transform: translateZ(-4px); filter: brightness(0.8) contrast(1.2); opacity: 0.95;">
-                        <img src="logo.png" alt="OUTTAMND" class="h-14 sm:h-18 w-auto object-contain relative select-none" style="transform: translateZ(0px); filter: contrast(1.1);">
-                        <div class="absolute inset-0 overflow-hidden pointer-events-none logo-shine-mask" style="transform: translateZ(2px);">
-                            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent animate-shine w-full"></div>
-                        </div>
-                    </div>
-                </a>
+    <!-- HEADER -->
+    <header class="sticky top-0 z-40 bg-[#0b0f19]/90 backdrop-blur-md border-b border-gray-800/80 px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-8">
+            <!-- Custom Logo integrated here -->
+            <div class="flex items-center gap-3 cursor-pointer" onclick="switchTab('beats')">
+                <img src="logo.png" alt="OUTTAMND" class="h-9 w-auto object-contain">
             </div>
-
-            <!-- Desktop Nav Links -->
-            <nav class="hidden md:flex items-center space-x-8 text-sm font-medium text-gray-300">
-                <a href="#beats" class="hover:text-accent transition">Beats</a>
-                <a href="#kits" class="hover:text-accent transition">Drum Kits</a>
-                <button onclick="openLicensingInfoModal()" class="hover:text-accent transition text-left">Licensing</button>
-                <button onclick="openContactModal()" class="hover:text-accent transition text-left">Contact</button>
+            <nav class="hidden md:flex items-center gap-6 text-sm font-medium text-gray-400">
+                <button onclick="switchTab('beats')" id="nav-beats" class="text-white transition hover:text-white">Beats</button>
+                <button onclick="switchTab('kits')" id="nav-kits" class="transition hover:text-white">Drum Kits</button>
+                <button onclick="switchTab('licensing')" id="nav-licensing" class="transition hover:text-white">Licensing</button>
+                <button onclick="switchTab('contact')" id="nav-contact" class="transition hover:text-white">Contact</button>
             </nav>
+        </div>
 
-            <!-- Actions -->
-            <div class="flex items-center space-x-3">
-                <button onclick="toggleMobileMenu()" class="md:hidden p-2.5 rounded-xl bg-cardbg border border-gray-800 hover:border-accent transition text-gray-300 shadow-inner">
-                    <i class="fa-solid fa-bars text-accent text-base"></i>
-                </button>
-                <button onclick="toggleCart()" class="relative p-2.5 rounded-xl bg-cardbg border border-gray-800 hover:border-accent transition flex items-center space-x-2 text-gray-300 shadow-inner">
-                    <i class="fa-solid fa-cart-shopping text-accent"></i>
-                    <span id="cart-count" class="bg-accent text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-[0_0_10px_#8b5cf6]">0</span>
-                </button>
-            </div>
+        <div class="flex items-center gap-4">
+            <button onclick="openOwnerModal()" title="Owner Moderation Panel" class="w-10 h-10 rounded-xl bg-gray-900 border border-gray-800 flex items-center justify-center text-gray-400 hover:text-purple-400 hover:border-purple-500/50 transition">
+                <i class="fa-solid fa-lock text-sm"></i>
+            </button>
+            <button onclick="toggleCart()" class="relative flex items-center gap-2 bg-gray-900 border border-gray-800 px-4 py-2 rounded-xl text-sm font-semibold hover:border-gray-700 transition">
+                <i class="fa-solid fa-cart-shopping text-purple-400"></i>
+                <span id="cart-count" class="bg-purple-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">0</span>
+            </button>
         </div>
     </header>
 
-    <!-- Mobile Menu Drawer -->
-    <div id="mobile-menu-drawer" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md hidden flex flex-col p-6">
-        <div class="flex items-center justify-between pb-4 border-b border-gray-800 mb-6">
-            <span class="text-lg font-black text-white flex items-center space-x-2">
-                <i class="fa-solid fa-bars text-accent"></i>
-                <span>Navigation</span>
-            </span>
-            <button onclick="toggleMobileMenu()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
-        </div>
-        <div class="flex flex-col space-y-3 text-sm font-medium">
-            <a href="#beats" onclick="toggleMobileMenu()" class="p-4 rounded-xl bg-darkbg border border-gray-800 text-white hover:border-accent transition flex items-center justify-between shadow-inner">
-                <span>Beats Vault</span>
-                <i class="fa-solid fa-play text-accent text-xs"></i>
-            </a>
-            <a href="#kits" onclick="toggleMobileMenu()" class="p-4 rounded-xl bg-darkbg border border-gray-800 text-white hover:border-accent transition flex items-center justify-between shadow-inner">
-                <span>Drum Kits & Sound Banks</span>
-                <i class="fa-solid fa-drum text-accent text-xs"></i>
-            </a>
-            <button onclick="toggleMobileMenu(); openLicensingInfoModal();" class="p-4 rounded-xl bg-darkbg border border-gray-800 text-white hover:border-accent transition flex items-center justify-between text-left shadow-inner">
-                <span>Licensing Terms</span>
-                <i class="fa-solid fa-file-contract text-accent text-xs"></i>
-            </button>
-            <button onclick="toggleMobileMenu(); openContactModal();" class="p-4 rounded-xl bg-darkbg border border-gray-800 text-white hover:border-accent transition flex items-center justify-between text-left shadow-inner">
-                <span>Contact & Socials</span>
-                <i class="fa-solid fa-envelope text-accent text-xs"></i>
-            </button>
-        </div>
-    </div>
-
-    <!-- Hero Section -->
-    <section class="relative overflow-hidden py-16 lg:py-28 border-b border-gray-900 bg-gradient-to-b from-[#070a14] to-darkbg shadow-2xl">
-        <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/15 via-transparent to-transparent pointer-events-none"></div>
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-            <span class="inline-block py-1 px-4 rounded-full bg-purple-950/40 border border-purple-800/30 text-purple-400 text-xs font-bold tracking-widest uppercase mb-6 shadow-inner">Underground Catalog • Direct Placements</span>
-            <h1 class="text-4xl sm:text-7xl font-black text-white tracking-tight mb-6 drop-shadow-2xl">
-                SECURE YOUR <span class="text-transparent bg-clip-text bg-gradient-to-r from-accent via-purple-400 to-indigo-400">NEXT PLACEMENT</span>
-            </h1>
-            <p class="max-w-2xl mx-auto text-base sm:text-lg text-gray-400 mb-10 font-normal">
-                Raw industry beat instrumentals built with heavy bounce and dark textures. Instant digital delivery with high-quality MP3, WAV, and Stems.
-            </p>
-            <div class="flex flex-wrap justify-center gap-4">
-                <a href="#beats" class="px-8 py-4 rounded-xl bg-accent hover:bg-accenthover text-white font-bold shadow-[0_0_25px_rgba(139,92,246,0.4)] transition flex items-center space-x-2">
-                    <i class="fa-solid fa-play"></i>
-                    <span>Browse Beats</span>
-                </a>
-                <a href="#kits" class="px-8 py-4 rounded-xl bg-cardbg border border-gray-800 hover:border-accent text-gray-200 font-bold transition shadow-inner">
-                    Get Drum Kits
-                </a>
-            </div>
-        </div>
-    </section>
-
-    <!-- Main Content -->
-    <main class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-10 sm:py-16 flex-grow w-full space-y-20 pb-40">
-
-        <!-- Beats Section -->
-        <section id="beats">
-            <div class="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+    <!-- MAIN CONTENT -->
+    <main class="max-w-6xl w-full mx-auto px-4 py-8 flex-grow">
+        
+        <!-- BEATS VIEW -->
+        <div id="view-beats" class="space-y-6">
+            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-gradient-to-r from-gray-900/80 to-purple-950/20 border border-gray-800/80 p-6 rounded-2xl">
                 <div>
-                    <h2 class="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center space-x-3">
-                        <span class="w-3 h-3 rounded-full bg-accent inline-block shadow-[0_0_12px_#8b5cf6]"></span>
-                        <span>Latest Beats (<span id="beat-count-label">...</span>)</span>
-                    </h2>
+                    <h1 class="text-2xl font-bold text-white tracking-tight">Vault Catalog</h1>
                     <p class="text-sm text-gray-400 mt-1">Tap play to preview raw instrumentals instantly.</p>
                 </div>
-                <!-- Search & Filters -->
-                <div class="flex flex-wrap items-center gap-3">
-                    <div class="relative">
-                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-gray-500 text-sm"></i>
-                        <input type="text" id="search-input" oninput="filterBeats()" placeholder="Search vault..." class="bg-cardbg border border-gray-800 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-accent w-60 shadow-inner">
+                <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                    <div class="relative flex-grow md:w-72">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 text-sm"></i>
+                        <input type="text" id="search-input" oninput="handleSearch(this.value)" placeholder="Search vault..." class="w-full bg-gray-950/80 border border-gray-800 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500 transition">
                     </div>
-                    <select id="genre-filter" onchange="filterBeats()" class="bg-cardbg border border-gray-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-accent shadow-inner">
+                    <select id="genre-select" onchange="handleGenreFilter(this.value)" class="bg-gray-950/80 border border-gray-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500 transition">
                         <option value="all">All Genres</option>
-                        <option value="detroit">Detroit</option>
-                        <option value="florida">Florida</option>
-                        <option value="chaos">Chaos</option>
-                        <option value="emotional">Emotional</option>
-                        <option value="2000s">2000s</option>
                     </select>
                 </div>
             </div>
 
-            <!-- Beat List Container -->
-            <div id="beats-container" class="space-y-3.5">
-                <!-- Dynamically populated from my_beats.json -->
-            </div>
-        </section>
+            <div id="beats-container" class="space-y-3"></div>
+            <div id="pagination-container" class="flex items-center justify-center gap-2 pt-4"></div>
+        </div>
 
-        <!-- Drum Kits Section -->
-        <section id="kits" class="pt-12 border-t border-gray-900">
-            <div class="mb-8">
-                <h2 class="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center space-x-3">
-                    <span class="w-3 h-3 rounded-full bg-accent inline-block shadow-[0_0_12px_#8b5cf6]"></span>
-                    <span>Sound Kits & Drum Kits</span>
-                </h2>
-                <p class="text-sm text-gray-400 mt-1">Hard-hitting custom sound banks and FL Studio drum kits straight from session files.</p>
-            </div>
+        <!-- DRUM KITS VIEW -->
+        <div id="view-kits" class="hidden space-y-6">
+            <h1 class="text-2xl font-bold text-white">Drum Kits & Presets</h1>
+            <p class="text-gray-400">Custom 808s, Roland XV-5080 presets, and Glo loops engineered by Outtamnd.</p>
+        </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div class="bg-cardbg border border-gray-800/90 rounded-2xl p-6 flex flex-col justify-between hover:border-gray-700 transition shadow-2xl">
+        <!-- LICENSING VIEW -->
+        <div id="view-licensing" class="hidden space-y-6">
+            <h1 class="text-2xl font-bold text-white">Licensing Terms</h1>
+            <p class="text-gray-400">Detailed breakdown of MP3 Lease, WAV Trackout, and Unlimited Rights.</p>
+        </div>
+
+        <!-- CONTACT VIEW -->
+        <div id="view-contact" class="hidden space-y-6 max-w-2xl">
+            <h1 class="text-2xl font-bold text-white">Contact & Custom Production</h1>
+            <p class="text-gray-400">Reach out for custom placements, collaborations, and exclusive inquiries through any of the channels below.</p>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4">
+                <a href="https://instagram.com/outtamnd.mp3" target="_blank" class="bg-gray-900 border border-gray-800 p-5 rounded-2xl hover:border-purple-500/50 transition flex flex-col items-center text-center gap-3 group">
+                    <div class="w-12 h-12 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center text-xl group-hover:scale-110 transition"><i class="fa-brands fa-instagram"></i></div>
                     <div>
-                        <div class="h-44 rounded-xl bg-gradient-to-br from-purple-950/30 via-[#050811] to-black flex items-center justify-center mb-5 border border-gray-800/80 shadow-inner">
-                            <i class="fa-solid fa-drum text-4xl text-accent drop-shadow-[0_0_10px_#8b5cf6]"></i>
-                        </div>
-                        <span class="text-xs font-bold text-purple-400 uppercase tracking-widest">Expansion Kit</span>
-                        <h3 class="text-lg font-black text-white mt-1">!OUTTADRUMS V1 OFFICIAL DRUMKIT</h3>
-                        <p class="text-sm text-gray-400 mt-2 leading-relaxed">Custom processed 808s, hard snares, claps, and custom melodic one-shots extracted directly from verified sessions.</p>
+                        <h4 class="font-bold text-white text-sm">Instagram</h4>
+                        <p class="text-xs text-gray-400 mt-1">@outtamnd.mp3</p>
                     </div>
-                    <div class="mt-6 flex items-center justify-between pt-4 border-t border-gray-800/80">
-                        <span class="text-xl font-black text-white">$5.00</span>
-                        <button onclick="addKitToCart('!OUTTADRUMS V1 OFFICIAL DRUMKIT', 5.00)" class="px-4 py-2.5 rounded-xl bg-accent hover:bg-accenthover text-white text-sm font-bold transition flex items-center space-x-2 shadow-lg shadow-purple-950/60">
-                            <i class="fa-solid fa-cart-plus"></i>
-                            <span>Add to Bag</span>
-                        </button>
+                </a>
+                <a href="https://x.com/0uttamnd" target="_blank" class="bg-gray-900 border border-gray-800 p-5 rounded-2xl hover:border-purple-500/50 transition flex flex-col items-center text-center gap-3 group">
+                    <div class="w-12 h-12 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center text-xl group-hover:scale-110 transition"><i class="fa-brands fa-x-twitter"></i></div>
+                    <div>
+                        <h4 class="font-bold text-white text-sm">X (Twitter)</h4>
+                        <p class="text-xs text-gray-400 mt-1">@0uttamnd</p>
                     </div>
-                </div>
+                </a>
+                <a href="mailto:outtamnd@gmail.com" class="bg-gray-900 border border-gray-800 p-5 rounded-2xl hover:border-purple-500/50 transition flex flex-col items-center text-center gap-3 group">
+                    <div class="w-12 h-12 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center text-xl group-hover:scale-110 transition"><i class="fa-solid fa-envelope"></i></div>
+                    <div>
+                        <h4 class="font-bold text-white text-sm">Email</h4>
+                        <p class="text-xs text-gray-400 mt-1 truncate max-w-[150px]">outtamnd@gmail.com</p>
+                    </div>
+                </a>
             </div>
-        </section>
+        </div>
 
     </main>
 
-    <!-- Footer -->
-    <footer class="bg-darkbg border-t border-gray-900 py-10 text-center text-xs text-gray-600">
-        <p>© 2026 Outtamnd Productions. All rights reserved.</p>
-    </footer>
-
-    <!-- Persistent Bottom Sticky Audio Player Bar -->
-    <div id="player-bar" class="fixed bottom-0 left-0 right-0 z-50 bg-[#050811]/95 backdrop-blur-md border-t border-gray-800 shadow-[0_-15px_40px_rgba(0,0,0,0.9)] px-3 sm:px-6 py-3.5 hidden">
-        <div class="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
-            <div class="flex items-center space-x-3 w-[30%] sm:w-1/4 min-w-0">
-                <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-cardbg flex items-center justify-center flex-shrink-0 border border-gray-800 shadow-inner">
-                    <i class="fa-solid fa-compact-disc text-accent text-base sm:text-xl animate-spin drop-shadow-[0_0_8px_#8b5cf6]"></i>
+    <!-- STICKY BOTTOM AUDIO PLAYER -->
+    <div class="sticky bottom-0 z-50 bg-[#0b0f19]/95 backdrop-blur-lg border-t border-gray-800/80 px-4 py-3">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-4 w-full md:w-1/3">
+                <div class="w-12 h-12 rounded-xl bg-purple-900/40 border border-purple-500/30 flex items-center justify-center text-purple-400 shrink-0">
+                    <i id="player-icon" class="fa-solid fa-music text-lg"></i>
                 </div>
-                <div class="min-w-0">
-                    <h4 id="player-title" class="text-xs sm:text-sm font-bold text-white truncate">Select a Beat</h4>
-                    <p id="player-genre" class="text-[10px] sm:text-xs text-purple-400 truncate font-semibold">Outtamnd</p>
+                <div class="overflow-hidden">
+                    <h4 id="player-title" class="text-sm font-bold text-white truncate">select a track to preview</h4>
+                    <p id="player-subtitle" class="text-xs text-gray-400 truncate">0 BPM • READY</p>
                 </div>
             </div>
 
-            <div class="flex flex-col items-center w-[55%] sm:w-2/4 max-w-xl">
-                <div class="flex items-center space-x-4 sm:space-x-6 mb-1.5">
-                    <button class="text-gray-400 hover:text-white transition text-xs sm:text-sm"><i class="fa-solid fa-backward-step"></i></button>
-                    <button onclick="togglePlay()" id="play-pause-btn" class="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-accent hover:bg-accenthover text-white flex items-center justify-center shadow-[0_0_20px_rgba(139,92,246,0.5)] transition">
-                        <i id="play-icon" class="fa-solid fa-play text-xs sm:text-sm"></i>
+            <div class="flex flex-col items-center gap-1 w-full md:w-1/3">
+                <div class="flex items-center gap-6">
+                    <button onclick="playPrevTrack()" class="text-gray-400 hover:text-white transition"><i class="fa-solid fa-backward-step"></i></button>
+                    <button onclick="togglePlayPause()" id="play-pause-btn" class="w-10 h-10 rounded-full bg-purple-600 hover:bg-purple-500 flex items-center justify-center text-white shadow-lg shadow-purple-600/30 transition">
+                        <i class="fa-solid fa-play text-sm"></i>
                     </button>
-                    <button class="text-gray-400 hover:text-white transition text-xs sm:text-sm"><i class="fa-solid fa-forward-step"></i></button>
+                    <button onclick="playNextTrack()" class="text-gray-400 hover:text-white transition"><i class="fa-solid fa-forward-step"></i></button>
                 </div>
-                <div class="w-full flex items-center space-x-2 sm:space-x-3 text-[10px] sm:text-xs text-gray-400 font-mono">
+                <div class="flex items-center gap-3 w-full text-xs text-gray-500">
                     <span id="current-time">0:00</span>
-                    <div class="flex-grow bg-gray-900 h-2 rounded-full overflow-hidden cursor-pointer shadow-inner border border-gray-800/50" onclick="seekAudio(event)">
-                        <div id="progress-bar" class="bg-accent h-full w-0 transition-all shadow-[0_0_10px_#8b5cf6]"></div>
-                    </div>
-                    <span id="duration">0:00</span>
+                    <input type="range" id="seek-bar" value="0" min="0" max="100" oninput="handleSeek(this.value)" class="w-full h-1 bg-gray-800 rounded-lg appearance-none cursor-pointer accent-purple-500">
+                    <span id="total-time">0:00</span>
                 </div>
             </div>
 
-            <div class="hidden md:flex items-center justify-end space-x-4 w-1/4">
-                <div class="flex items-center space-x-2 text-gray-400">
-                    <i class="fa-solid fa-volume-high text-sm"></i>
-                    <input type="range" min="0" max="1" step="0.01" value="0.8" oninput="setVolume(this.value)" class="w-20 accent-accent cursor-pointer">
+            <div class="flex items-center justify-end gap-4 w-full md:w-1/3">
+                <div class="hidden md:flex items-center gap-2">
+                    <i class="fa-solid fa-volume-high text-gray-500 text-sm"></i>
+                    <input type="range" min="0" max="1" step="0.05" value="0.8" oninput="handleVolume(this.value)" class="w-20 h-1 bg-gray-800 rounded-lg appearance-none cursor-pointer accent-purple-500">
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Licensing Info Modal -->
-    <div id="licensing-info-modal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md hidden flex items-center justify-center p-4">
-        <div class="bg-cardbg border border-gray-800 rounded-2xl max-w-2xl w-full p-6 sm:p-8 relative shadow-2xl max-h-[90vh] overflow-y-auto custom-scrollbar">
-            <button onclick="closeLicensingInfoModal()" class="absolute top-5 right-5 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
-            <div class="text-center mb-6">
-                <div class="w-12 h-12 mx-auto rounded-2xl bg-accent/20 border border-accent/40 flex items-center justify-center text-accent text-xl mb-3 shadow-[0_0_15px_rgba(139,92,246,0.3)]">
-                    <i class="fa-solid fa-file-contract"></i>
-                </div>
-                <h3 class="text-2xl font-black text-white">Licensing Terms & Rights</h3>
-                <p class="text-sm text-gray-400 mt-1">Review audio formats and streaming rights for each tier.</p>
-            </div>
-
-            <div class="space-y-4">
-                <div class="bg-darkbg p-5 rounded-xl border border-gray-800 shadow-inner">
-                    <div class="flex items-center justify-between mb-2">
-                        <h4 class="font-bold text-white text-base">MP3 Lease</h4>
-                        <span class="text-accent font-black text-lg">$25.00</span>
-                    </div>
-                    <p class="text-xs text-gray-300 leading-relaxed mb-3">Standard release license for online streaming platforms and digital distribution.</p>
-                    <ul class="text-xs text-gray-400 space-y-1.5 list-disc list-inside">
-                        <li>Includes High-Quality MP3 File (.mp3)</li>
-                        <li>Up to <strong class="text-white">5,000</strong> total streams</li>
-                        <li>Up to <strong class="text-white">1</strong> commercial music video</li>
-                        <li>Must credit producer (Prod. by Outtamnd)</li>
-                    </ul>
-                </div>
-
-                <div class="bg-darkbg p-5 rounded-xl border border-gray-800 shadow-inner">
-                    <div class="flex items-center justify-between mb-2">
-                        <h4 class="font-bold text-white text-base">WAV Lease</h4>
-                        <span class="text-accent font-black text-lg">$50.00</span>
-                    </div>
-                    <p class="text-xs text-gray-300 leading-relaxed mb-3">Enhanced audio fidelity for professional mixing, mastering, and wider promotion.</p>
-                    <ul class="text-xs text-gray-400 space-y-1.5 list-disc list-inside">
-                        <li>Includes MP3 & High-Quality WAV Audio Files (.wav)</li>
-                        <li>Up to <strong class="text-white">15,000</strong> total streams</li>
-                        <li>Up to <strong class="text-white">2</strong> commercial music videos</li>
-                        <li>Radio broadcasting rights (up to 2 stations)</li>
-                    </ul>
-                </div>
-
-                <div class="bg-darkbg p-5 rounded-xl border border-gray-800 shadow-inner">
-                    <div class="flex items-center justify-between mb-2">
-                        <h4 class="font-bold text-white text-base">Unlimited Rights</h4>
-                        <span class="text-accent font-black text-lg">$100.00</span>
-                    </div>
-                    <p class="text-xs text-gray-300 leading-relaxed mb-3">Complete creative freedom with full track stems for your recording engineer.</p>
-                    <ul class="text-xs text-gray-400 space-y-1.5 list-disc list-inside">
-                        <li>Includes MP3, WAV, + Full Track Stems (Separated Audio Stems)</li>
-                        <li><strong class="text-white">Unlimited</strong> streams and commercial distribution</li>
-                        <li><strong class="text-white">Unlimited</strong> music videos & live performances</li>
-                        <li>Full ownership control for label submissions</li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="mt-8 text-center">
-                <button onclick="closeLicensingInfoModal()" class="px-8 py-3 rounded-xl bg-accent hover:bg-accenthover text-white text-sm font-bold transition shadow-lg shadow-purple-950/60">
-                    Got It, Back to Vault
+                <button onclick="openLicenseModalFromPlayer()" class="bg-purple-600 hover:bg-purple-500 text-white font-semibold text-sm px-5 py-2 rounded-xl shadow-lg shadow-purple-600/20 transition">
+                    Buy $25.00+
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Contact Modal -->
-    <div id="contact-modal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md hidden flex items-center justify-center p-4">
-        <div class="bg-cardbg border border-gray-800 rounded-2xl max-w-md w-full p-6 sm:p-8 relative shadow-2xl">
-            <button onclick="closeContactModal()" class="absolute top-5 right-5 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
-            <div class="text-center mb-6">
-                <div class="w-12 h-12 mx-auto rounded-2xl bg-accent/20 border border-accent/40 flex items-center justify-center text-accent text-xl mb-3 shadow-[0_0_15px_rgba(139,92,246,0.3)]">
-                    <i class="fa-solid fa-envelope"></i>
+    <!-- OWNER MODERATION MODAL -->
+    <div id="owner-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-gray-900 border border-gray-800 w-full max-w-2xl rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[85vh]">
+            <div class="p-5 border-b border-gray-800 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></div>
+                    <h3 class="font-bold text-white text-lg">Owner Catalog Moderator</h3>
                 </div>
-                <h3 class="text-2xl font-black text-white">Get in Touch</h3>
-                <p class="text-sm text-gray-400 mt-1">Direct inquiries, custom beat requests & placements.</p>
-            </div>
-            <div class="space-y-3">
-                <a href="mailto:outtamnd@gmail.com" class="p-4 rounded-xl bg-darkbg border border-gray-800 hover:border-accent transition flex items-center space-x-3 text-white group shadow-inner">
-                    <i class="fa-solid fa-envelope text-accent text-lg"></i>
-                    <div>
-                        <span class="block text-xs text-gray-400">Email</span>
-                        <span class="text-sm font-bold group-hover:text-accent transition">outtamnd@gmail.com</span>
-                    </div>
-                </a>
-                <a href="https://instagram.com/outtamnd.mp3" target="_blank" class="p-4 rounded-xl bg-darkbg border border-gray-800 hover:border-accent transition flex items-center space-x-3 text-white group shadow-inner">
-                    <i class="fa-brands fa-instagram text-accent text-lg"></i>
-                    <div>
-                        <span class="block text-xs text-gray-400">Instagram</span>
-                        <span class="text-sm font-bold group-hover:text-accent transition">@outtamnd.mp3</span>
-                    </div>
-                </a>
-                <a href="https://x.com/0uttamnd" target="_blank" class="p-4 rounded-xl bg-darkbg border border-gray-800 hover:border-accent transition flex items-center space-x-3 text-white group shadow-inner">
-                    <i class="fa-brands fa-x-twitter text-accent text-lg"></i>
-                    <div>
-                        <span class="block text-xs text-gray-400">X (Twitter)</span>
-                        <span class="text-sm font-bold group-hover:text-accent transition">@0uttamnd</span>
-                    </div>
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <!-- License Selection Modal -->
-    <div id="license-modal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md hidden flex items-center justify-center p-4">
-        <div class="bg-cardbg border border-gray-800 rounded-2xl max-w-2xl w-full p-6 sm:p-8 relative shadow-2xl">
-            <button onclick="closeLicenseModal()" class="absolute top-5 right-5 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
-            <h3 id="modal-beat-title" class="text-2xl font-black text-white mb-2">Select License</h3>
-            <p class="text-sm text-gray-400 mb-6">Choose the rights that fit your project release.</p>
-
-            <!DOCTYPE html>
-<html lang="en" class="dark">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OUTTAMND | Underground Beat Vault</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        darkbg: '#030508',
-                        cardbg: '#0a0e17',
-                        cardborder: '#1f2a40',
-                        accent: '#8b5cf6',
-                        accenthover: '#7c3aed'
-                    },
-                    keyframes: {
-                        sideflip: {
-                            '0%': { transform: 'rotateY(0deg)' },
-                            '100%': { transform: 'rotateY(360deg)' }
-                        },
-                        shine: {
-                            '0%': { transform: 'translateX(-150%) skewX(-20deg)' },
-                            '25%': { transform: 'translateX(150%) skewX(-20deg)' },
-                            '100%': { transform: 'translateX(150%) skewX(-20deg)' }
-                        }
-                    },
-                    animation: {
-                        sideflip: 'sideflip 7s linear infinite',
-                        shine: 'shine 4s ease-in-out infinite'
-                    }
-                }
-            }
-        }
-    </script>
-    <!-- Stripe JS SDK -->
-    <script src="https://js.stripe.com/v3/"></script>
-    <!-- FontAwesome for Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Space Grotesk', sans-serif; background-color: #030508; color: #e5e7eb; }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #0a0e17; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #1f2a40; border-radius: 3px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #374151; }
-        .perspective-container { perspective: 1200px; }
-        .grunge-overlay {
-            background-image: radial-gradient(rgba(139, 92, 246, 0.04) 1px, transparent 0);
-            background-size: 24px 24px;
-        }
-        .logo-shine-mask {
-            -webkit-mask-image: url('logo.png');
-            mask-image: url('logo.png');
-            -webkit-mask-size: contain;
-            mask-size: contain;
-            -webkit-mask-repeat: no-repeat;
-            mask-repeat: no-repeat;
-            -webkit-mask-position: center;
-            mask-position: center;
-        }
-    </style>
-</head>
-<body class="bg-darkbg text-gray-100 min-h-screen flex flex-col justify-between selection:bg-accent selection:text-white grunge-overlay">
-
-    <!-- Native Audio Element with preload="auto" for mobile compatibility -->
-    <audio id="html-audio-element" preload="auto"></audio>
-
-    <!-- Top Navigation -->
-    <header class="sticky top-0 z-40 bg-darkbg/95 backdrop-blur-md border-b border-gray-900 shadow-[0_10px_30px_rgba(0,0,0,0.9)]">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <a href="#" class="flex items-center perspective-container py-2">
-                    <div class="relative animate-sideflip" style="transform-style: preserve-3d;">
-                        <img src="logo.png" alt="" class="h-14 sm:h-18 w-auto object-contain absolute top-0 left-0 select-none pointer-events-none" style="transform: translateZ(-8px); filter: brightness(0.6) contrast(1.2); opacity: 0.85;">
-                        <img src="logo.png" alt="" class="h-14 sm:h-18 w-auto object-contain absolute top-0 left-0 select-none pointer-events-none" style="transform: translateZ(-4px); filter: brightness(0.8) contrast(1.2); opacity: 0.95;">
-                        <img src="logo.png" alt="OUTTAMND" class="h-14 sm:h-18 w-auto object-contain relative select-none" style="transform: translateZ(0px); filter: contrast(1.1);">
-                        <div class="absolute inset-0 overflow-hidden pointer-events-none logo-shine-mask" style="transform: translateZ(2px);">
-                            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent animate-shine w-full"></div>
-                        </div>
-                    </div>
-                </a>
-            </div>
-
-            <!-- Desktop Nav Links -->
-            <nav class="hidden md:flex items-center space-x-8 text-sm font-medium text-gray-300">
-                <a href="#beats" class="hover:text-accent transition">Beats</a>
-                <a href="#kits" class="hover:text-accent transition">Drum Kits</a>
-                <button onclick="openLicensingInfoModal()" class="hover:text-accent transition text-left">Licensing</button>
-                <button onclick="openContactModal()" class="hover:text-accent transition text-left">Contact</button>
-            </nav>
-
-            <!-- Actions -->
-            <div class="flex items-center space-x-3">
-                <button onclick="toggleMobileMenu()" class="md:hidden p-2.5 rounded-xl bg-cardbg border border-gray-800 hover:border-accent transition text-gray-300 shadow-inner">
-                    <i class="fa-solid fa-bars text-accent text-base"></i>
-                </button>
-                <button onclick="toggleCart()" class="relative p-2.5 rounded-xl bg-cardbg border border-gray-800 hover:border-accent transition flex items-center space-x-2 text-gray-300 shadow-inner">
-                    <i class="fa-solid fa-cart-shopping text-accent"></i>
-                    <span id="cart-count" class="bg-accent text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-[0_0_10px_#8b5cf6]">0</span>
-                </button>
-            </div>
-        </div>
-    </header>
-
-    <!-- Mobile Menu Drawer -->
-    <div id="mobile-menu-drawer" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md hidden flex flex-col p-6">
-        <div class="flex items-center justify-between pb-4 border-b border-gray-800 mb-6">
-            <span class="text-lg font-black text-white flex items-center space-x-2">
-                <i class="fa-solid fa-bars text-accent"></i>
-                <span>Navigation</span>
-            </span>
-            <button onclick="toggleMobileMenu()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
-        </div>
-        <div class="flex flex-col space-y-3 text-sm font-medium">
-            <a href="#beats" onclick="toggleMobileMenu()" class="p-4 rounded-xl bg-darkbg border border-gray-800 text-white hover:border-accent transition flex items-center justify-between shadow-inner">
-                <span>Beats Vault</span>
-                <i class="fa-solid fa-play text-accent text-xs"></i>
-            </a>
-            <a href="#kits" onclick="toggleMobileMenu()" class="p-4 rounded-xl bg-darkbg border border-gray-800 text-white hover:border-accent transition flex items-center justify-between shadow-inner">
-                <span>Drum Kits & Sound Banks</span>
-                <i class="fa-solid fa-drum text-accent text-xs"></i>
-            </a>
-            <button onclick="toggleMobileMenu(); openLicensingInfoModal();" class="p-4 rounded-xl bg-darkbg border border-gray-800 text-white hover:border-accent transition flex items-center justify-between text-left shadow-inner">
-                <span>Licensing Terms</span>
-                <i class="fa-solid fa-file-contract text-accent text-xs"></i>
-            </button>
-            <button onclick="toggleMobileMenu(); openContactModal();" class="p-4 rounded-xl bg-darkbg border border-gray-800 text-white hover:border-accent transition flex items-center justify-between text-left shadow-inner">
-                <span>Contact & Socials</span>
-                <i class="fa-solid fa-envelope text-accent text-xs"></i>
-            </button>
-        </div>
-    </div>
-
-    <!-- Hero Section -->
-    <section class="relative overflow-hidden py-16 lg:py-28 border-b border-gray-900 bg-gradient-to-b from-[#070a14] to-darkbg shadow-2xl">
-        <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/15 via-transparent to-transparent pointer-events-none"></div>
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-            <span class="inline-block py-1 px-4 rounded-full bg-purple-950/40 border border-purple-800/30 text-purple-400 text-xs font-bold tracking-widest uppercase mb-6 shadow-inner">Underground Catalog • Direct Placements</span>
-            <h1 class="text-4xl sm:text-7xl font-black text-white tracking-tight mb-6 drop-shadow-2xl">
-                SECURE YOUR <span class="text-transparent bg-clip-text bg-gradient-to-r from-accent via-purple-400 to-indigo-400">NEXT PLACEMENT</span>
-            </h1>
-            <p class="max-w-2xl mx-auto text-base sm:text-lg text-gray-400 mb-10 font-normal">
-                Raw industry beat instrumentals built with heavy bounce and dark textures. Instant digital delivery with high-quality MP3, WAV, and Stems.
-            </p>
-            <div class="flex flex-wrap justify-center gap-4">
-                <a href="#beats" class="px-8 py-4 rounded-xl bg-accent hover:bg-accenthover text-white font-bold shadow-[0_0_25px_rgba(139,92,246,0.4)] transition flex items-center space-x-2">
-                    <i class="fa-solid fa-play"></i>
-                    <span>Browse Beats</span>
-                </a>
-                <a href="#kits" class="px-8 py-4 rounded-xl bg-cardbg border border-gray-800 hover:border-accent text-gray-200 font-bold transition shadow-inner">
-                    Get Drum Kits
-                </a>
-            </div>
-        </div>
-    </section>
-
-    <!-- Main Content -->
-    <main class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-10 sm:py-16 flex-grow w-full space-y-20 pb-40">
-
-        <!-- Beats Section -->
-        <section id="beats">
-            <div class="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
-                <div>
-                    <h2 class="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center space-x-3">
-                        <span class="w-3 h-3 rounded-full bg-accent inline-block shadow-[0_0_12px_#8b5cf6]"></span>
-                        <span>Latest Beats (<span id="beat-count-label">...</span>)</span>
-                    </h2>
-                    <p class="text-sm text-gray-400 mt-1">Tap play to preview raw instrumentals instantly.</p>
-                </div>
-                <!-- Search & Filters -->
-                <div class="flex flex-wrap items-center gap-3">
-                    <div class="relative">
-                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-gray-500 text-sm"></i>
-                        <input type="text" id="search-input" oninput="filterBeats()" placeholder="Search vault..." class="bg-cardbg border border-gray-800 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-accent w-60 shadow-inner">
-                    </div>
-                    <select id="genre-filter" onchange="filterBeats()" class="bg-cardbg border border-gray-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-accent shadow-inner">
-                        <option value="all">All Genres</option>
-                        <option value="detroit">Detroit</option>
-                        <option value="florida">Florida</option>
-                        <option value="chaos">Chaos</option>
-                        <option value="emotional">Emotional</option>
-                        <option value="2000s">2000s</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- Beat List Container -->
-            <div id="beats-container" class="space-y-3.5">
-                <!-- Dynamically populated from beats.json -->
-            </div>
-        </section>
-
-        <!-- Drum Kits Section -->
-        <section id="kits" class="pt-12 border-t border-gray-900">
-            <div class="mb-8">
-                <h2 class="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center space-x-3">
-                    <span class="w-3 h-3 rounded-full bg-accent inline-block shadow-[0_0_12px_#8b5cf6]"></span>
-                    <span>Sound Kits & Drum Kits</span>
-                </h2>
-                <p class="text-sm text-gray-400 mt-1">Hard-hitting custom sound banks and FL Studio drum kits straight from session files.</p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div class="bg-cardbg border border-gray-800/90 rounded-2xl p-6 flex flex-col justify-between hover:border-gray-700 transition shadow-2xl">
-                    <div>
-                        <div class="h-44 rounded-xl bg-gradient-to-br from-purple-950/30 via-[#050811] to-black flex items-center justify-center mb-5 border border-gray-800/80 shadow-inner">
-                            <i class="fa-solid fa-drum text-4xl text-accent drop-shadow-[0_0_10px_#8b5cf6]"></i>
-                        </div>
-                        <span class="text-xs font-bold text-purple-400 uppercase tracking-widest">Expansion Kit</span>
-                        <h3 class="text-lg font-black text-white mt-1">!OUTTADRUMS V1 OFFICIAL DRUMKIT</h3>
-                        <p class="text-sm text-gray-400 mt-2 leading-relaxed">Custom processed 808s, hard snares, claps, and custom melodic one-shots extracted directly from verified sessions.</p>
-                    </div>
-                    <div class="mt-6 flex items-center justify-between pt-4 border-t border-gray-800/80">
-                        <span class="text-xl font-black text-white">$5.00</span>
-                        <button onclick="addKitToCart('!OUTTADRUMS V1 OFFICIAL DRUMKIT', 5.00)" class="px-4 py-2.5 rounded-xl bg-accent hover:bg-accenthover text-white text-sm font-bold transition flex items-center space-x-2 shadow-lg shadow-purple-950/60">
-                            <i class="fa-solid fa-cart-plus"></i>
-                            <span>Add to Bag</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- Footer -->
-    <footer class="bg-darkbg border-t border-gray-900 py-10 text-center text-xs text-gray-600">
-        <p>© 2026 Outtamnd Productions. All rights reserved.</p>
-    </footer>
-
-    <!-- Persistent Bottom Sticky Audio Player Bar -->
-    <div id="player-bar" class="fixed bottom-0 left-0 right-0 z-50 bg-[#050811]/95 backdrop-blur-md border-t border-gray-800 shadow-[0_-15px_40px_rgba(0,0,0,0.9)] px-3 sm:px-6 py-3.5 hidden">
-        <div class="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
-            <div class="flex items-center space-x-3 w-[30%] sm:w-1/4 min-w-0">
-                <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-cardbg flex items-center justify-center flex-shrink-0 border border-gray-800 shadow-inner">
-                    <i class="fa-solid fa-compact-disc text-accent text-base sm:text-xl animate-spin drop-shadow-[0_0_8px_#8b5cf6]"></i>
-                </div>
-                <div class="min-w-0">
-                    <h4 id="player-title" class="text-xs sm:text-sm font-bold text-white truncate">Select a Beat</h4>
-                    <p id="player-genre" class="text-[10px] sm:text-xs text-purple-400 truncate font-semibold">Outtamnd</p>
-                </div>
-            </div>
-
-            <div class="flex flex-col items-center w-[55%] sm:w-2/4 max-w-xl">
-                <div class="flex items-center space-x-4 sm:space-x-6 mb-1.5">
-                    <button class="text-gray-400 hover:text-white transition text-xs sm:text-sm"><i class="fa-solid fa-backward-step"></i></button>
-                    <button onclick="togglePlay()" id="play-pause-btn" class="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-accent hover:bg-accenthover text-white flex items-center justify-center shadow-[0_0_20px_rgba(139,92,246,0.5)] transition">
-                        <i id="play-icon" class="fa-solid fa-play text-xs sm:text-sm"></i>
+                <div class="flex items-center gap-3">
+                    <button onclick="exportCleanJSON()" class="bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold px-3 py-2 rounded-xl transition flex items-center gap-2">
+                        <i class="fa-solid fa-download"></i> Export my_beats.json
                     </button>
-                    <button class="text-gray-400 hover:text-white transition text-xs sm:text-sm"><i class="fa-solid fa-forward-step"></i></button>
-                </div>
-                <div class="w-full flex items-center space-x-2 sm:space-x-3 text-[10px] sm:text-xs text-gray-400 font-mono">
-                    <span id="current-time">0:00</span>
-                    <div class="flex-grow bg-gray-900 h-2 rounded-full overflow-hidden cursor-pointer shadow-inner border border-gray-800/50" onclick="seekAudio(event)">
-                        <div id="progress-bar" class="bg-accent h-full w-0 transition-all shadow-[0_0_10px_#8b5cf6]"></div>
-                    </div>
-                    <span id="duration">0:00</span>
+                    <button onclick="closeOwnerModal()" class="text-gray-400 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
                 </div>
             </div>
-
-            <div class="hidden md:flex items-center justify-end space-x-4 w-1/4">
-                <div class="flex items-center space-x-2 text-gray-400">
-                    <i class="fa-solid fa-volume-high text-sm"></i>
-                    <input type="range" min="0" max="1" step="0.01" value="0.8" oninput="setVolume(this.value)" class="w-20 accent-accent cursor-pointer">
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Licensing Info Modal -->
-    <div id="licensing-info-modal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md hidden flex items-center justify-center p-4">
-        <div class="bg-cardbg border border-gray-800 rounded-2xl max-w-2xl w-full p-6 sm:p-8 relative shadow-2xl max-h-[90vh] overflow-y-auto custom-scrollbar">
-            <button onclick="closeLicensingInfoModal()" class="absolute top-5 right-5 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
-            <div class="text-center mb-6">
-                <div class="w-12 h-12 mx-auto rounded-2xl bg-accent/20 border border-accent/40 flex items-center justify-center text-accent text-xl mb-3 shadow-[0_0_15px_rgba(139,92,246,0.3)]">
-                    <i class="fa-solid fa-file-contract"></i>
-                </div>
-                <h3 class="text-2xl font-black text-white">Licensing Terms & Rights</h3>
-                <p class="text-sm text-gray-400 mt-1">Review audio formats and streaming rights for each tier.</p>
-            </div>
-
-            <div class="space-y-4">
-                <div class="bg-darkbg p-5 rounded-xl border border-gray-800 shadow-inner">
-                    <div class="flex items-center justify-between mb-2">
-                        <h4 class="font-bold text-white text-base">MP3 Lease</h4>
-                        <span class="text-accent font-black text-lg">$25.00</span>
-                    </div>
-                    <p class="text-xs text-gray-300 leading-relaxed mb-3">Standard release license for online streaming platforms and digital distribution.</p>
-                    <ul class="text-xs text-gray-400 space-y-1.5 list-disc list-inside">
-                        <li>Includes High-Quality MP3 File (.mp3)</li>
-                        <li>Up to <strong class="text-white">5,000</strong> total streams</li>
-                        <li>Up to <strong class="text-white">1</strong> commercial music video</li>
-                        <li>Must credit producer (Prod. by Outtamnd)</li>
-                    </ul>
-                </div>
-
-                <div class="bg-darkbg p-5 rounded-xl border border-gray-800 shadow-inner">
-                    <div class="flex items-center justify-between mb-2">
-                        <h4 class="font-bold text-white text-base">WAV Lease</h4>
-                        <span class="text-accent font-black text-lg">$50.00</span>
-                    </div>
-                    <p class="text-xs text-gray-300 leading-relaxed mb-3">Enhanced audio fidelity for professional mixing, mastering, and wider promotion.</p>
-                    <ul class="text-xs text-gray-400 space-y-1.5 list-disc list-inside">
-                        <li>Includes MP3 & High-Quality WAV Audio Files (.wav)</li>
-                        <li>Up to <strong class="text-white">15,000</strong> total streams</li>
-                        <li>Up to <strong class="text-white">2</strong> commercial music videos</li>
-                        <li>Radio broadcasting rights (up to 2 stations)</li>
-                    </ul>
-                </div>
-
-                <div class="bg-darkbg p-5 rounded-xl border border-gray-800 shadow-inner">
-                    <div class="flex items-center justify-between mb-2">
-                        <h4 class="font-bold text-white text-base">Unlimited Rights</h4>
-                        <span class="text-accent font-black text-lg">$100.00</span>
-                    </div>
-                    <p class="text-xs text-gray-300 leading-relaxed mb-3">Complete creative freedom with full track stems for your recording engineer.</p>
-                    <ul class="text-xs text-gray-400 space-y-1.5 list-disc list-inside">
-                        <li>Includes MP3, WAV, + Full Track Stems (Separated Audio Stems)</li>
-                        <li><strong class="text-white">Unlimited</strong> streams and commercial distribution</li>
-                        <li><strong class="text-white">Unlimited</strong> music videos & live performances</li>
-                        <li>Full ownership control for label submissions</li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="mt-8 text-center">
-                <button onclick="closeLicensingInfoModal()" class="px-8 py-3 rounded-xl bg-accent hover:bg-accenthover text-white text-sm font-bold transition shadow-lg shadow-purple-950/60">
-                    Got It, Back to Vault
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Contact Modal -->
-    <div id="contact-modal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md hidden flex items-center justify-center p-4">
-        <div class="bg-cardbg border border-gray-800 rounded-2xl max-w-md w-full p-6 sm:p-8 relative shadow-2xl">
-            <button onclick="closeContactModal()" class="absolute top-5 right-5 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
-            <div class="text-center mb-6">
-                <div class="w-12 h-12 mx-auto rounded-2xl bg-accent/20 border border-accent/40 flex items-center justify-center text-accent text-xl mb-3 shadow-[0_0_15px_rgba(139,92,246,0.3)]">
-                    <i class="fa-solid fa-envelope"></i>
-                </div>
-                <h3 class="text-2xl font-black text-white">Get in Touch</h3>
-                <p class="text-sm text-gray-400 mt-1">Direct inquiries, custom beat requests & placements.</p>
-            </div>
-            <div class="space-y-3">
-                <a href="mailto:outtamnd@gmail.com" class="p-4 rounded-xl bg-darkbg border border-gray-800 hover:border-accent transition flex items-center space-x-3 text-white group shadow-inner">
-                    <i class="fa-solid fa-envelope text-accent text-lg"></i>
-                    <div>
-                        <span class="block text-xs text-gray-400">Email</span>
-                        <span class="text-sm font-bold group-hover:text-accent transition">outtamnd@gmail.com</span>
-                    </div>
-                </a>
-                <a href="https://instagram.com/outtamnd.mp3" target="_blank" class="p-4 rounded-xl bg-darkbg border border-gray-800 hover:border-accent transition flex items-center space-x-3 text-white group shadow-inner">
-                    <i class="fa-brands fa-instagram text-accent text-lg"></i>
-                    <div>
-                        <span class="block text-xs text-gray-400">Instagram</span>
-                        <span class="text-sm font-bold group-hover:text-accent transition">@outtamnd.mp3</span>
-                    </div>
-                </a>
-                <a href="https://x.com/0uttamnd" target="_blank" class="p-4 rounded-xl bg-darkbg border border-gray-800 hover:border-accent transition flex items-center space-x-3 text-white group shadow-inner">
-                    <i class="fa-brands fa-x-twitter text-accent text-lg"></i>
-                    <div>
-                        <span class="block text-xs text-gray-400">X (Twitter)</span>
-                        <span class="text-sm font-bold group-hover:text-accent transition">@0uttamnd</span>
-                    </div>
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <!-- License Selection Modal -->
-    <div id="license-modal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md hidden flex items-center justify-center p-4">
-        <div class="bg-cardbg border border-gray-800 rounded-2xl max-w-2xl w-full p-6 sm:p-8 relative shadow-2xl">
-            <button onclick="closeLicenseModal()" class="absolute top-5 right-5 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
-            <h3 id="modal-beat-title" class="text-2xl font-black text-white mb-2">Select License</h3>
-            <p class="text-sm text-gray-400 mb-6">Choose the rights that fit your project release.</p>
-
-            <div class="space-y-3 mb-6">
-                <div onclick="selectLicenseOption('MP3 Lease', 25.00)" class="p-4 sm:p-5 rounded-xl border border-gray-800 hover:border-accent cursor-pointer transition flex items-center justify-between group bg-darkbg shadow-inner">
-                    <div>
-                        <h4 class="font-bold text-white group-hover:text-accent transition">MP3 Lease</h4>
-                        <p class="text-xs text-gray-400 mt-0.5">High Quality MP3 File • Up to 5,000 streams</p>
-                    </div>
-                    <span class="text-lg font-black text-white">$25.00</span>
-                </div>
-                <div onclick="selectLicenseOption('WAV Lease', 50.00)" class="p-4 sm:p-5 rounded-xl border border-gray-800 hover:border-accent cursor-pointer transition flex items-center justify-between group bg-darkbg shadow-inner">
-                    <div>
-                        <h4 class="font-bold text-white group-hover:text-accent transition">WAV Lease</h4>
-                        <p class="text-xs text-gray-400 mt-0.5">High Quality MP3 + WAV Files • Up to 15,000 streams</p>
-                    </div>
-                    <span class="text-lg font-black text-white">$50.00</span>
-                </div>
-                <div onclick="selectLicenseOption('Unlimited Rights', 100.00)" class="p-4 sm:p-5 rounded-xl border border-gray-800 hover:border-accent cursor-pointer transition flex items-center justify-between group bg-darkbg shadow-inner">
-                    <div>
-                        <h4 class="font-bold text-white group-hover:text-accent transition">Unlimited Rights</h4>
-                        <p class="text-xs text-gray-400 mt-0.5">MP3, WAV + Track Stems • Unlimited Streams</p>
-                    </div>
-                    <span class="text-lg font-black text-white">$100.00</span>
-                </div>
-            </div>
-            <button onclick="confirmLicensePurchase()" class="w-full py-3.5 rounded-xl bg-accent hover:bg-accenthover text-white font-bold transition shadow-lg shadow-purple-950/60">
-                Add to Bag
-            </button>
-        </div>
-    </div>
-
-    <!-- Shopping Cart Drawer -->
-    <div id="cart-drawer" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md hidden flex justify-end">
-        <div class="bg-cardbg border-l border-gray-800 w-full max-w-md h-full flex flex-col justify-between p-6 shadow-2xl">
-            <div>
-                <div class="flex items-center justify-between pb-4 border-b border-gray-800">
-                    <h3 class="text-lg font-black text-white flex items-center space-x-2">
-                        <i class="fa-solid fa-cart-shopping text-accent"></i>
-                        <span>Your Bag</span>
-                    </h3>
-                    <button onclick="toggleCart()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
-                </div>
-
-                <div id="cart-items" class="py-2 space-y-3 overflow-y-auto max-h-[50vh] custom-scrollbar">
-                    <p class="text-gray-500 text-sm text-center py-8">Your bag is empty.</p>
-                </div>
-            </div>
-            <div class="border-t border-gray-800 pt-4 space-y-2">
-                <div class="flex items-center justify-between mb-4">
-                    <span class="text-sm text-gray-400">Total:</span>
-                    <span id="cart-total" class="text-2xl font-black text-white">$0.00</span>
-                </div>
-                <button id="checkout-btn" onclick="checkoutWithStripe()" class="w-full py-4 rounded-xl bg-accent hover:bg-accenthover text-white font-bold shadow-lg shadow-purple-950/60 transition flex items-center justify-center space-x-2">
-                    <i class="fa-brands fa-stripe text-xl"></i>
-                    <span>Pay with Stripe</span>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- JavaScript Application Logic -->
-    <script>
-        const AUDIO_BASE_URL = '';
-        const MEDIAFIRE_DRUMKIT_URL = 'https://www.mediafire.com/file/brise7wzx7jg29z/%2521OUTTADRUMS_V1_OFFICIAL_DRUMKIT.zip/file';
-
-        let beats = [];
-        let cart = [];
-        let currentBeat = null;
-        let activeModalBeat = null;
-        let selectedLicenseType = 'MP3 Lease';
-        let selectedLicensePrice = 25.00;
-
-        const audio = document.getElementById('html-audio-element');
-
-        audio.addEventListener('timeupdate', () => {
-            if (audio.duration) {
-                const pct = (audio.currentTime / audio.duration) * 100;
-                document.getElementById('progress-bar').style.width = pct + '%';
-                document.getElementById('current-time').innerText = formatTime(audio.currentTime);
-                document.getElementById('duration').innerText = formatTime(audio.duration);
-            }
-        });
-
-        audio.addEventListener('ended', () => {
-            document.getElementById('play-icon').className = 'fa-solid fa-play text-xs sm:text-sm';
-        });
-
-        window.addEventListener('DOMContentLoaded', async () => {
-            try {
-                let res; 
-                for (const path of ['beats.json', './beats.json', '/beats.json', 'my_beats.json', './my_beats.json']) { 
-                    try { 
-                        res = await fetch(path); 
-                        if (res.ok) break; 
-                    } catch(e) {} 
-                }
-                if (!res || !res.ok) throw new Error('Failed to fetch beats catalog');
-                beats = await res.json();
-                document.getElementById('beat-count-label').innerText = beats.length;
-                renderBeats(beats);
-            } catch (err) {
-                console.error('Error loading beats:', err);
-                document.getElementById('beats-container').innerHTML = '<p class="text-gray-500 text-sm text-center py-4">Failed to load beats catalog.</p>';
-            }
-        });
-
-        function renderBeats(list) {
-            const container = document.getElementById('beats-container');
             
-            // STRICT FILTER: Only keep beats that match the exact formatting standard
-            const validList = list.filter(beat => {
-                const rawTitle = beat.title || '';
-                const audioFile = beat.audio || beat.filename || beat.file || '';
-                if (!rawTitle || !audioFile) return false;
+            <div id="owner-auth-section" class="p-8 space-y-4">
+                <p class="text-sm text-gray-400">Enter your owner password to manage and moderate catalog tracks.</p>
+                <div class="flex gap-3">
+                    <input type="password" id="owner-pass-input" placeholder="Enter password..." class="flex-grow bg-gray-950 border border-gray-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500">
+                    <button onclick="verifyOwnerPassword()" class="bg-purple-600 hover:bg-purple-500 text-white text-sm font-semibold px-6 py-2.5 rounded-xl transition">Unlock</button>
+                </div>
+            </div>
 
-                const strictPattern = /^\(.*\)\s+outtamnd.*?\s-\s.+?\s\d{2,3}$/i;
-                return strictPattern.test(rawTitle);
+            <div id="owner-panel-content" class="hidden flex-grow flex flex-col overflow-hidden">
+                <div class="flex border-b border-gray-800 px-6 pt-4 gap-6">
+                    <button onclick="switchOwnerTab('active')" id="owner-tab-active" class="pb-3 text-sm font-semibold border-b-2 border-purple-500 text-white">Active Beats</button>
+                    <button onclick="switchOwnerTab('trash')" id="owner-tab-trash" class="pb-3 text-sm font-semibold border-b-2 border-transparent text-gray-400 hover:text-white">Hidden / Trash</button>
+                    <div class="flex-grow"></div>
+                    <input type="text" oninput="filterOwnerList(this.value)" placeholder="Search beat titles..." class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-1 text-xs text-white mb-3 w-48">
+                </div>
+                <div id="owner-items-list" class="flex-grow overflow-y-auto p-6 space-y-2 custom-scrollbar"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // Stripe Configuration
+        const STRIPE_PUBLISHABLE_KEY = "pk_live_51UTWZIPaFUlsYooP06FGb2XiPMpagGuRMwNRlpWkGvS4F8w7tHcDu5IXr2n9yyvvGjNF1ZHUxiLAePXZAwm30UpT00kYlneWDl";
+        const DEFAULT_PAYMENT_LINK = "https://buy.stripe.com/cNi5kF9RP4DI2m0goB2kw00";
+
+        let allBeats = [];
+        let hiddenBeatIds = JSON.parse(localStorage.getItem('outtamnd_hidden_beats') || '[]');
+        let currentTrack = null;
+        let isPlaying = false;
+        let currentPage = 1;
+        const itemsPerPage = 25;
+        let currentGenre = 'all';
+        let searchQuery = '';
+        let ownerAuthenticated = false;
+        let ownerActiveTab = 'active';
+
+        function parseBeatFilename(filename) {
+            let clean = filename.replace(/\.[^/.]+$/, "");
+            clean = clean.replace(/^(\+[\w\s]+\-\s*)+/i, '');
+            clean = clean.replace(/outtamnd\s*\+\s*[\w\s\+\-]+\-\s*/gi, '');
+            clean = clean.replace(/^[\+\-\sx]+/, '').trim();
+
+            let tags = ['trap'];
+            const parenMatch = clean.match(/\(([^)]+)\)/);
+            if (parenMatch) {
+                tags = parenMatch[1].split(',').map(t => t.trim().toLowerCase());
+                clean = clean.replace(/\([^)]+\)/g, '');
+            }
+
+            let bpm = '140';
+            const bpmMatch = clean.match(/\b(9\d|1[0-9]\d|2[0-5]\d)\b/);
+            if (bpmMatch) {
+                bpm = bpmMatch[1];
+                clean = clean.replace(bpmMatch[0], '');
+            }
+
+            clean = clean.replace(/[\_\-\+]+/g, ' ').trim();
+            if (!clean || clean.length < 2) clean = "untitled beat";
+
+            return {
+                title: clean.toLowerCase(),
+                bpm: bpm + ' BPM',
+                tags: tags.map(t => t.toUpperCase()),
+                url: filename
+            };
+        }
+
+        const fallbackVaultFilenames = [
+            "(trap, glo) star 144.mp3",
+            "(emotional, philly drill) crisis 150.mp3",
+            "(florida, smooth) walk 148.mp3",
+            "+ omarguetfa - (sampled, soul) story mode 159.mp3",
+            "(trap, sampled) swag on 147.mp3",
+            "(detroit) champ 170.mp3",
+            "+ a4key - (dark, trap) menace 142.mp3",
+            "(glo, bouncy) motion 145.mp3"
+        ];
+
+        async function initCatalog() {
+            try {
+                const res = await fetch('my_beats.json');
+                if (!res.ok) throw new Error('Failed');
+                const data = await res.json();
+                if (Array.isArray(data)) {
+                    allBeats = data.map((filename, idx) => ({ id: idx, ...parseBeatFilename(filename) }));
+                }
+            } catch (err) {
+                allBeats = fallbackVaultFilenames.map((filename, idx) => ({ id: idx, ...parseBeatFilename(filename) }));
+            }
+            populateGenres();
+            renderBeats();
+        }
+
+        function populateGenres() {
+            const genresSet = new Set();
+            allBeats.forEach(b => b.tags.forEach(t => genresSet.add(t)));
+            const select = document.getElementById('genre-select');
+            select.innerHTML = '<option value="all">All Genres</option>';
+            Array.from(genresSet).sort().forEach(g => {
+                select.innerHTML += `<option value="${g}">${g}</option>`;
+            });
+        }
+
+        function renderBeats() {
+            const container = document.getElementById('beats-container');
+            const activeBeats = allBeats.filter(b => !hiddenBeatIds.includes(b.id));
+            
+            const filtered = activeBeats.filter(b => {
+                const matchesSearch = b.title.includes(searchQuery.toLowerCase()) || b.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase()));
+                const matchesGenre = currentGenre === 'all' || b.tags.includes(currentGenre);
+                return matchesSearch && matchesGenre;
             });
 
-            document.getElementById('beat-count-label').innerText = validList.length;
+            const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
+            if (currentPage > totalPages) currentPage = 1;
 
-            if (validList.length === 0) {
-                container.innerHTML = '<p class="text-gray-500 text-sm text-center py-8">No properly formatted beats found.</p>';
+            const start = (currentPage - 1) * itemsPerPage;
+            const pageItems = filtered.slice(start, start + itemsPerPage);
+
+            if (pageItems.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-16 bg-gray-900/40 border border-gray-800/80 rounded-2xl">
+                        <div class="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center mx-auto text-gray-400 mb-3">
+                            <i class="fa-solid fa-compact-disc"></i>
+                        </div>
+                        <h3 class="text-white font-semibold">No beats match your search</h3>
+                        <p class="text-sm text-gray-500 mt-1">Try clearing your vault search or selecting 'All Genres'.</p>
+                    </div>`;
+                document.getElementById('pagination-container').innerHTML = '';
                 return;
             }
 
-            container.innerHTML = validList.map((beat, idx) => {
-                const audioFile = beat.audio || beat.filename || beat.file || '';
-                
-                let rawTitle = beat.title || '';
-                let detectedBpm = beat.bpm;
-
-                // 1. Extract trailing BPM
-                const bpmMatch = rawTitle.match(/\b(\d{2,3})\s*$/);
-                if (bpmMatch) {
-                    if (!detectedBpm) detectedBpm = bpmMatch[1];
-                    rawTitle = rawTitle.replace(/\b\d{2,3}\s*$/, '').trim();
-                }
-
-                // 2. Extract genre from parentheses
-                const genreMatch = beat.title.match(/^\((.*?)\)/);
-                const genreDisplay = genreMatch ? genreMatch[1] : (beat.genre || 'Trap');
-
-                // 3. Remove leading parentheses tags
-                rawTitle = rawTitle.replace(/^[\(\\[].*?[\\]\)]\s*/g, '').trim();
-
-                // 4. Handle hyphen separators
-                if (rawTitle.includes(' - ')) {
-                    const parts = rawTitle.split(' - ');
-                    rawTitle = parts[parts.length - 1].trim();
-                }
-
-                // 5. Clean up leading producer prefix
-                rawTitle = rawTitle.replace(/^outtamnd\s+/i, '').trim();
-
-                const displayTitle = rawTitle || beat.title;
-                const bpmDisplay = detectedBpm ? `${detectedBpm} BPM` : '140 BPM';
-
-                return `
-                <div class="bg-cardbg border border-gray-800/90 hover:border-gray-700 transition rounded-2xl p-4 sm:p-5 flex items-center justify-between gap-4 shadow-xl group">
-                    <div class="flex items-center space-x-4 min-w-0">
-                        <button onclick="playBeat('${displayTitle.replace(/'/g, "\\'")}', '${audioFile}', '${genreDisplay}')" class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-accent/20 border border-accent/40 group-hover:bg-accent text-accent group-hover:text-white flex items-center justify-center flex-shrink-0 transition shadow-[0_0_15px_rgba(139,92,246,0.2)]">
-                            <i class="fa-solid fa-play text-sm sm:text-base"></i>
+            container.innerHTML = pageItems.map(beat => `
+                <div class="bg-gray-900/50 hover:bg-gray-900 border border-gray-800/80 hover:border-gray-700 p-4 rounded-2xl flex items-center justify-between gap-4 transition group">
+                    <div class="flex items-center gap-4 min-w-0">
+                        <button onclick="playBeat(${beat.id})" class="w-11 h-11 rounded-xl bg-purple-600 hover:bg-purple-500 text-white flex items-center justify-center shrink-0 shadow-lg shadow-purple-600/20 transition">
+                            <i class="fa-solid fa-play text-xs ml-0.5"></i>
                         </button>
                         <div class="min-w-0">
-                            <h4 class="text-white font-black text-base sm:text-lg truncate">${displayTitle}</h4>
-                            <div class="flex items-center space-x-3 text-xs text-gray-400 mt-1 font-mono">
-                                <span class="text-purple-400 font-bold">${bpmDisplay}</span>
-                                <span>•</span>
-                                <span class="uppercase tracking-wider">${genreDisplay}</span>
-                            </div>
+                            <h3 class="font-bold text-white text-base truncate group-hover:text-purple-400 transition">${beat.title}</h3>
+                            <p class="text-xs text-gray-400 font-medium mt-0.5">${beat.bpm} • ${beat.tags.join(', ')}</p>
                         </div>
                     </div>
-                    <div class="flex items-center space-x-3 sm:space-x-4 flex-shrink-0">
-                        <span class="text-white font-black text-base sm:text-lg">$25.00+</span>
-                        <button onclick="openLicenseModal('${displayTitle.replace(/'/g, "\\'")}')" class="px-4 py-2.5 rounded-xl bg-accent hover:bg-accenthover text-white text-xs sm:text-sm font-bold transition shadow-md shadow-purple-950/50 flex items-center space-x-1.5">
-                            <i class="fa-solid fa-cart-plus"></i>
-                            <span class="hidden sm:inline">Add</span>
+                    <div class="flex items-center gap-4 shrink-0">
+                        ${ownerAuthenticated ? `
+                            <button onclick="hideBeat(${beat.id})" title="Delete Beat" class="w-9 h-9 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 flex items-center justify-center transition">
+                                <i class="fa-solid fa-trash text-xs"></i>
+                            </button>
+                        ` : ''}
+                        <span class="font-bold text-white text-sm hidden sm:inline">$25.00+</span>
+                        <button onclick="checkoutBeat(${beat.id})" class="bg-gray-800 hover:bg-purple-600 text-white font-semibold text-xs px-4 py-2 rounded-xl transition">
+                            <i class="fa-solid fa-cart-plus mr-1"></i> Buy
                         </button>
                     </div>
-                </div>
-            `;
-            }).join('');
-        }
-
-        function filterBeats() {
-            const query = document.getElementById('search-input').value.toLowerCase();
-            const genre = document.getElementById('genre-filter').value;
-
-            const filtered = beats.filter(b => {
-                const matchesQuery = b.title.toLowerCase().includes(query) || (b.genre && b.genre.toLowerCase().includes(query));
-                const matchesGenre = genre === 'all' || (b.genre && b.genre.toLowerCase() === genre.toLowerCase());
-                return matchesQuery && matchesGenre;
-            });
-
-            renderBeats(filtered);
-        }
-
-        function playBeat(title, audioFile, genre) {
-            if (!audioFile || audioFile === 'undefined') {
-                console.error('Audio file path is missing for beat:', title);
-                return;
-            }
-
-            currentBeat = title;
-            document.getElementById('player-title').innerText = title;
-            document.getElementById('player-genre').innerText = genre;
-            document.getElementById('player-bar').classList.remove('hidden');
-
-            audio.src = AUDIO_BASE_URL + encodeURI(audioFile);
-            audio.load();
-            audio.play().then(() => {
-                document.getElementById('play-icon').className = 'fa-solid fa-pause text-xs sm:text-sm';
-            }).catch(e => {
-                console.log('Audio playback prevented or failed:', e);
-                document.getElementById('play-icon').className = 'fa-solid fa-play text-xs sm:text-sm';
-            });
-        }
-
-        function togglePlay() {
-            if (audio.paused) {
-                if (!audio.src && beats.length > 0) {
-                    const firstBeat = beats[0];
-                    const audioFile = firstBeat.audio || firstBeat.filename || firstBeat.file || '';
-                    let displayTitle = firstBeat.title;
-                    if (firstBeat.title && firstBeat.title.includes(' - ')) {
-                        const parts = firstBeat.title.split(' - ');
-                        const suffix = parts[1];
-                        const match = suffix.match(/^(.*?)\s+(\d{2,3})$/);
-                        if (match) displayTitle = match[1];
-                        else displayTitle = suffix;
-                    }
-                    playBeat(displayTitle, audioFile, firstBeat.genre || 'Beat');
-                    return;
-                }
-                audio.play().then(() => {
-                    document.getElementById('play-icon').className = 'fa-solid fa-pause text-xs sm:text-sm';
-                }).catch(e => console.log('Play prevented:', e));
-            } else {
-                audio.pause();
-                document.getElementById('play-icon').className = 'fa-solid fa-play text-xs sm:text-sm';
-            }
-        }
-
-        function seekAudio(event) {
-            const rect = event.currentTarget.getBoundingClientRect();
-            const pos = (event.clientX - rect.left) / rect.width;
-            if (audio.duration) {
-                audio.currentTime = pos * audio.duration;
-            }
-        }
-
-        function setVolume(val) {
-            audio.volume = val;
-        }
-
-        function formatTime(secs) {
-            const mins = Math.floor(secs / 60);
-            const remain = Math.floor(secs % 60);
-            return mins + ':' + (remain < 10 ? '0' : '') + remain;
-        }
-
-        function openLicensingInfoModal() { document.getElementById('licensing-info-modal').classList.remove('hidden'); }
-        function closeLicensingInfoModal() { document.getElementById('licensing-info-modal').classList.add('hidden'); }
-        function openContactModal() { document.getElementById('contact-modal').classList.remove('hidden'); }
-        function closeContactModal() { document.getElementById('contact-modal').classList.add('hidden'); }
-        function toggleCart() { document.getElementById('cart-drawer').classList.toggle('hidden'); }
-        function toggleMobileMenu() { document.getElementById('mobile-menu-drawer').classList.toggle('hidden'); }
-
-        function openLicenseModal(title) {
-            activeModalBeat = title;
-            document.getElementById('modal-beat-title').innerText = title;
-            document.getElementById('license-modal').classList.remove('hidden');
-        }
-        function closeLicenseModal() { document.getElementById('license-modal').classList.add('hidden'); }
-
-        function selectLicenseOption(type, price) {
-            selectedLicenseType = type;
-            selectedLicensePrice = price;
-        }
-
-        function confirmLicensePurchase() {
-            if (!activeModalBeat) return;
-            cart.push({
-                title: `${activeModalBeat} (${selectedLicenseType})`,
-                price: selectedLicensePrice,
-                type: 'beat'
-            });
-            closeLicenseModal();
-            updateCartUI();
-            toggleCart();
-        }
-
-        function addKitToCart(title, price) {
-            cart.push({
-                title: title,
-                price: price,
-                type: 'kit',
-                downloadUrl: MEDIAFIRE_DRUMKIT_URL
-            });
-            updateCartUI();
-            toggleCart();
-        }
-
-        function removeFromCart(index) {
-            cart.splice(index, 1);
-            updateCartUI();
-        }
-
-        function updateCartUI() {
-            const container = document.getElementById('cart-items');
-            const countLabel = document.getElementById('cart-count');
-            const totalLabel = document.getElementById('cart-total');
-
-            countLabel.innerText = cart.length;
-
-            if (cart.length === 0) {
-                container.innerHTML = '<p class="text-gray-500 text-sm text-center py-8">Your bag is empty.</p>';
-                totalLabel.innerText = '$0.00';
-                return;
-            }
-
-            container.innerHTML = cart.map((item, idx) => `
-                <div class="bg-darkbg border border-gray-800 p-3.5 rounded-xl flex items-center justify-between shadow-inner">
-                    <div class="min-w-0 pr-3">
-                        <h4 class="text-white font-bold text-sm truncate">${item.title}</h4>
-                        <span class="text-xs text-purple-400 font-mono font-semibold">$${item.price.toFixed(2)}</span>
-                    </div>
-                    <button onclick="removeFromCart(${idx})" class="text-gray-500 hover:text-red-400 text-xs px-2 py-1 transition"><i class="fa-solid fa-trash"></i></button>
                 </div>
             `).join('');
 
-            let total = 0;
-            cart.forEach(item => {
-                total += item.price;
-            });
-
-            totalLabel.innerText = `$${total.toFixed(2)}`;
+            renderPagination(totalPages);
         }
 
-        async function checkoutWithStripe() {
-            if (cart.length === 0) {
-                alert('Your bag is empty!');
-                return;
+        function renderPagination(totalPages) {
+            const container = document.getElementById('pagination-container');
+            if (totalPages <= 1) { container.innerHTML = ''; return; }
+            let html = '';
+            for (let i = 1; i <= totalPages; i++) {
+                html += `<button onclick="goToPage(${i})" class="w-9 h-9 rounded-xl font-semibold text-xs transition ${currentPage === i ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30' : 'bg-gray-900 border border-gray-800 text-gray-400 hover:text-white'}">${i}</button>`;
             }
+            container.innerHTML = html;
+        }
 
-            const checkoutBtn = document.getElementById('checkout-btn');
-            checkoutBtn.disabled = true;
-            checkoutBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-lg"></i><span>Processing...</span>';
+        function goToPage(p) { currentPage = p; renderBeats(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+        function handleSearch(val) { searchQuery = val; currentPage = 1; renderBeats(); }
+        function handleGenreFilter(val) { currentGenre = val; currentPage = 1; renderBeats(); }
 
-            const itemsPayload = cart.map(item => ({
-                name: item.title,
-                price: item.price,
-                quantity: 1
-            }));
+        let audioCtx = null;
+        let synthOsc = null;
+        let synthGain = null;
 
+        function playBeat(id) {
+            const beat = allBeats.find(b => b.id === id);
+            if (!beat) return;
+            currentTrack = beat;
+            isPlaying = true;
+
+            document.getElementById('player-title').innerText = beat.title;
+            document.getElementById('player-subtitle').innerText = `${beat.bpm} • ${beat.tags.join(', ')}`;
+            document.getElementById('play-pause-btn').innerHTML = '<i class="fa-solid fa-pause text-sm"></i>';
+            startSynthTone();
+        }
+
+        function startSynthTone() {
             try {
-                const response = await fetch('/api/checkout', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ items: itemsPayload })
-                });
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (synthOsc) { synthOsc.stop(); synthOsc.disconnect(); }
+                synthOsc = audioCtx.createOscillator();
+                synthGain = audioCtx.createGain();
+                synthOsc.type = 'sawtooth';
+                synthOsc.frequency.setValueAtTime(110, audioCtx.currentTime);
+                synthGain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                synthOsc.connect(synthGain);
+                synthGain.connect(audioCtx.destination);
+                synthOsc.start();
+            } catch(e) {}
+        }
 
-                const data = await response.json();
-
-                if (data.url) {
-                    window.location.href = data.url;
-                } else {
-                    alert('Checkout error: ' + (data.error || 'Unable to create session'));
-                    checkoutBtn.disabled = false;
-                    checkoutBtn.innerHTML = '<i class="fa-brands fa-stripe text-xl"></i><span>Pay with Stripe</span>';
-                }
-            } catch (err) {
-                console.error('Network error:', err);
-                alert('Network error connecting to backend.');
-                checkoutBtn.disabled = false;
-                checkoutBtn.innerHTML = '<i class="fa-brands fa-stripe text-xl"></i><span>Pay with Stripe</span>';
+        function togglePlayPause() {
+            if (!currentTrack) { if (allBeats.length > 0) playBeat(allBeats[0].id); return; }
+            isPlaying = !isPlaying;
+            const btn = document.getElementById('play-pause-btn');
+            if (isPlaying) {
+                btn.innerHTML = '<i class="fa-solid fa-pause text-sm"></i>';
+                startSynthTone();
+            } else {
+                btn.innerHTML = '<i class="fa-solid fa-play text-sm"></i>';
+                if (synthOsc) { synthOsc.stop(); synthOsc = null; }
             }
         }
+
+        function playNextTrack() {
+            if (!currentTrack) return;
+            const activeBeats = allBeats.filter(b => !hiddenBeatIds.includes(b.id));
+            const idx = activeBeats.findIndex(b => b.id === currentTrack.id);
+            if (idx !== -1 && idx < activeBeats.length - 1) playBeat(activeBeats[idx + 1].id);
+            else if (activeBeats.length > 0) playBeat(activeBeats[0].id);
+        }
+
+        function playPrevTrack() {
+            if (!currentTrack) return;
+            const activeBeats = allBeats.filter(b => !hiddenBeatIds.includes(b.id));
+            const idx = activeBeats.findIndex(b => b.id === currentTrack.id);
+            if (idx > 0) playBeat(activeBeats[idx - 1].id);
+            else if (activeBeats.length > 0) playBeat(activeBeats[activeBeats.length - 1].id);
+        }
+
+        function handleSeek(val) {}
+        function handleVolume(val) {
+            if (synthGain && audioCtx) synthGain.gain.setValueAtTime(val * 0.2, audioCtx.currentTime);
+        }
+
+        function switchTab(tab) {
+            ['beats', 'kits', 'licensing', 'contact'].forEach(t => {
+                document.getElementById(`view-${t}`).classList.add('hidden');
+                const nav = document.getElementById(`nav-${t}`);
+                if (nav) { nav.classList.remove('text-white'); nav.classList.add('text-gray-400'); }
+            });
+            document.getElementById(`view-${tab}`).classList.remove('hidden');
+            const activeNav = document.getElementById(`nav-${tab}`);
+            if (activeNav) { activeNav.classList.remove('text-gray-400'); activeNav.classList.add('text-white'); }
+        }
+
+        function openOwnerModal() {
+            document.getElementById('owner-modal').classList.remove('hidden');
+            if (ownerAuthenticated) {
+                document.getElementById('owner-auth-section').classList.add('hidden');
+                document.getElementById('owner-panel-content').classList.remove('hidden');
+                renderOwnerItems();
+            } else {
+                document.getElementById('owner-auth-section').classList.remove('hidden');
+                document.getElementById('owner-panel-content').classList.add('hidden');
+            }
+        }
+
+        function closeOwnerModal() { document.getElementById('owner-modal').classList.add('hidden'); }
+
+        function verifyOwnerPassword() {
+            const pass = document.getElementById('owner-pass-input').value;
+            if (pass === 'outtamnd2026') {
+                ownerAuthenticated = true;
+                document.getElementById('owner-auth-section').classList.add('hidden');
+                document.getElementById('owner-panel-content').classList.remove('hidden');
+                renderOwnerItems();
+                renderBeats();
+            } else { alert('Incorrect password!'); }
+        }
+
+        function switchOwnerTab(tab) {
+            ownerActiveTab = tab;
+            const btnActive = document.getElementById('owner-tab-active');
+            const btnTrash = document.getElementById('owner-tab-trash');
+            if (tab === 'active') {
+                btnActive.className = "pb-3 text-sm font-semibold border-b-2 border-purple-500 text-white";
+                btnTrash.className = "pb-3 text-sm font-semibold border-b-2 border-transparent text-gray-400 hover:text-white";
+            } else {
+                btnTrash.className = "pb-3 text-sm font-semibold border-b-2 border-purple-500 text-white";
+                btnActive.className = "pb-3 text-sm font-semibold border-b-2 border-transparent text-gray-400 hover:text-white";
+            }
+            renderOwnerItems();
+        }
+
+        function renderOwnerItems(query = '') {
+            const list = document.getElementById('owner-items-list');
+            const items = ownerActiveTab === 'active' ? allBeats.filter(b => !hiddenBeatIds.includes(b.id)) : allBeats.filter(b => hiddenBeatIds.includes(b.id));
+            const filtered = items.filter(b => b.title.includes(query.toLowerCase()));
+
+            if (filtered.length === 0) { list.innerHTML = `<p class="text-center text-gray-500 py-8 text-sm">No items found.</p>`; return; }
+
+            list.innerHTML = filtered.map(b => `
+                <div class="bg-gray-950 border border-gray-800 p-3 rounded-xl flex items-center justify-between gap-4">
+                    <div class="min-w-0"><h4 class="text-white text-sm font-bold truncate">${b.title}</h4><p class="text-xs text-gray-500 truncate">${b.url}</p></div>
+                    ${ownerActiveTab === 'active' ? `<button onclick="hideBeat(${b.id})" class="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 text-xs px-3 py-1.5 rounded-lg transition">Delete</button>` : `<button onclick="restoreBeat(${b.id})" class="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 text-xs px-3 py-1.5 rounded-lg transition">Restore</button>`}
+                </div>
+            `).join('');
+        }
+
+        function filterOwnerList(q) { renderOwnerItems(q); }
+
+        function hideBeat(id) {
+            if (!hiddenBeatIds.includes(id)) {
+                hiddenBeatIds.push(id);
+                localStorage.setItem('outtamnd_hidden_beats', JSON.stringify(hiddenBeatIds));
+                renderBeats();
+                if (ownerAuthenticated) renderOwnerItems();
+            }
+        }
+
+        function restoreBeat(id) {
+            hiddenBeatIds = hiddenBeatIds.filter(i => i !== id);
+            localStorage.setItem('outtamnd_hidden_beats', JSON.stringify(hiddenBeatIds));
+            renderBeats();
+            if (ownerAuthenticated) renderOwnerItems();
+        }
+
+        function exportCleanJSON() {
+            const activeFilenames = allBeats.filter(b => !hiddenBeatIds.includes(b.id)).map(b => b.url);
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(activeFilenames, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", "my_beats.json");
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'a') { e.preventDefault(); openOwnerModal(); }
+        });
+
+        // Stripe Checkout & Cart Integrations
+        let cartCount = 0;
+        function addToCart(id) { 
+            cartCount++; 
+            document.getElementById('cart-count').innerText = cartCount; 
+        }
+        
+        function toggleCart() { 
+            alert(`You have ${cartCount} item(s) in your cart.`); 
+        }
+
+        function checkoutBeat(beatId) {
+            const beat = allBeats.find(b => b.id === beatId);
+            if (beat) {
+                window.location.href = DEFAULT_PAYMENT_LINK;
+            }
+        }
+
+        function openLicenseModalFromPlayer() { 
+            if (currentTrack) {
+                window.location.href = DEFAULT_PAYMENT_LINK;
+            } else {
+                alert('Select a track first!');
+            }
+        }
+
+        window.onload = initCatalog;
     </script>
 </body>
 </html>
