@@ -343,12 +343,25 @@
                     const res = await fetch('my_beats.json');
                     if (!res.ok) throw new Error('Failed');
                     const data = await res.json();
+                    
                     if (Array.isArray(data)) {
-                        allBeats = data.map((filename, idx) => ({ id: idx, ...parseBeatFilename(filename) }));
+                        allBeats = data.map((item, idx) => ({
+                            id: item.id !== undefined ? parseInt(item.id) : idx,
+                            title: (item.title || "untitled beat").toLowerCase(),
+                            bpm: (item.bpm ? item.bpm + ' BPM' : '140 BPM'),
+                            tags: [item.genre ? item.genre.toUpperCase() : 'TRAP'],
+                            url: item.url || item.audio || item.file || `audio/${item.title}.mp3`
+                        }));
                     }
                 } catch (err) {
+                    console.log("Using fallback catalog due to load error:", err);
                     allBeats = fallbackVaultFilenames.map((filename, idx) => ({ id: idx, ...parseBeatFilename(filename) }));
                 }
+                localStorage.setItem('outtamnd_custom_beats', JSON.stringify(allBeats));
+            }
+            populateGenres();
+            renderBeats();
+        }
                 localStorage.setItem('outtamnd_custom_beats', JSON.stringify(allBeats));
             }
             populateGenres();
