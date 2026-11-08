@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,18 +8,58 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #040604; color: #f3f4f6; }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #040604;
+            color: #f3f4f6;
+        }
+
         .font-syne { font-family: 'Syne', sans-serif; }
         .glow-green { box-shadow: 0 0 25px -5px rgba(34,197,94,.35); }
         .glow-green-sm { box-shadow: 0 0 15px -3px rgba(34,197,94,.4); }
-        .glass-card { background: linear-gradient(135deg,rgba(14,24,16,.7),rgba(6,10,7,.8)); backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,.06); }
-        .glass-card:hover { border-color:rgba(34,197,94,.5); box-shadow:0 0 20px -5px rgba(34,197,94,.3); }
+
+        .glass-card {
+            background: linear-gradient(135deg,rgba(14,24,16,.7),rgba(6,10,7,.8));
+            backdrop-filter:blur(12px);
+            border:1px solid rgba(255,255,255,.06);
+        }
+
+        .glass-card:hover {
+            border-color:rgba(34,197,94,.5);
+            box-shadow:0 0 20px -5px rgba(34,197,94,.3);
+        }
+
         .custom-scrollbar::-webkit-scrollbar { width:5px; }
         .custom-scrollbar::-webkit-scrollbar-track { background:#040604; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background:#142317; border-radius:4px; }
+
+        /* Floating outer-space background */
+        #space-canvas {
+            position:fixed;
+            inset:0;
+            width:100%;
+            height:100%;
+            z-index:0;
+            pointer-events:none;
+            opacity:.8;
+        }
+
+        #beat-batch-dropzone.drag-active {
+            border-color:#4ade80;
+            background:rgba(20,83,45,.4);
+            box-shadow:0 0 25px -5px rgba(34,197,94,.3);
+        }
+
+        body > *:not(#space-canvas) {
+            z-index:1;
+        }
     </style>
 </head>
+
 <body class="min-h-screen flex flex-col justify-between selection:bg-green-500 selection:text-black">
+
+<canvas id="space-canvas" aria-hidden="true"></canvas>
 
 <header class="sticky top-0 z-40 bg-[#040604]/90 backdrop-blur-xl border-b border-gray-900 px-6 py-4 flex items-center justify-between">
     <div class="flex items-center gap-10">
@@ -216,10 +255,18 @@
 
         <div id="owner-panel-content" class="hidden flex-grow flex flex-col overflow-hidden">
             <div class="p-4 bg-black border-b border-gray-900 flex flex-col sm:flex-row items-center justify-between gap-3">
-                <label class="relative overflow-hidden w-full sm:w-auto bg-green-500 hover:bg-green-400 text-black text-xs font-bold px-4 py-2.5 rounded-xl cursor-pointer transition flex items-center justify-center gap-2 uppercase tracking-wider">
-                    <i class="fa-solid fa-cloud-arrow-up"></i> Upload MP3 Beats
-                    <input type="file" id="beat-upload-input" accept=".mp3,audio/mpeg" multiple onchange="handleSupabaseUpload(event)" aria-label="Choose MP3 beat files" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
-                </label>
+                <div class="w-full sm:w-auto">
+                    <div id="beat-batch-dropzone" class="border-2 border-dashed border-green-700/60 hover:border-green-400 bg-green-950/20 hover:bg-green-950/40 rounded-xl px-5 py-3 text-center cursor-pointer transition">
+                        <div class="flex items-center justify-center gap-3">
+                            <i class="fa-solid fa-cloud-arrow-up text-green-400 text-xl"></i>
+                            <div class="text-left">
+                                <p class="text-xs font-extrabold text-green-400 uppercase tracking-wider">Upload Beat Files</p>
+                                <p class="text-[10px] text-gray-400">Drop MP3 + WAV + ZIP together</p>
+                            </div>
+                        </div>
+                        <input type="file" id="beat-batch-input" accept=".mp3,.wav,.zip,audio/mpeg,audio/wav,application/zip" multiple onchange="handleBatchUpload(event)" class="hidden">
+                    </div>
+                </div>
                 <button onclick="ownerSignOut()" class="text-xs text-gray-400 hover:text-white border border-gray-800 rounded-lg px-3 py-2">Sign out</button>
                 <input id="owner-search-input" type="text" oninput="filterOwnerList(this.value)" placeholder="Search catalog items..." class="w-full sm:w-56 bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-green-500">
             </div>
@@ -260,6 +307,86 @@ function escapeHtml(value) {
     return String(value ?? '').replace(/[&<>"']/g, c => ({
         '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
     }[c]));
+}
+
+/* SPACE BACKGROUND */
+function initializeSpaceBackground() {
+    const canvas = document.getElementById('space-canvas');
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let width = 0;
+    let height = 0;
+    let stars = [];
+    let lastScrollY = window.scrollY;
+    let scrollBoost = 0;
+
+    function resize() {
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        const count = Math.min(180, Math.floor(width * height / 6500));
+        stars = Array.from({length: count}, () => ({
+            x: Math.random() * width,
+            y: Math.random() * height,
+            size: Math.random() * 1.5 + 0.25,
+            speed: Math.random() * 0.35 + 0.08,
+            opacity: Math.random() * 0.65 + 0.2,
+            twinkle: Math.random() * Math.PI * 2
+        }));
+    }
+
+    function onScroll() {
+        const currentScrollY = window.scrollY;
+        scrollBoost += Math.min(Math.abs(currentScrollY - lastScrollY) * 0.12, 12);
+        lastScrollY = currentScrollY;
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, width, height);
+
+        scrollBoost *= 0.94;
+
+        for (const star of stars) {
+            star.y += star.speed + scrollBoost * 0.12;
+            star.twinkle += 0.025;
+
+            if (star.y > height + 5) {
+                star.y = -5;
+                star.x = Math.random() * width;
+            }
+
+            const pulse = 0.65 + Math.sin(star.twinkle) * 0.35;
+            ctx.beginPath();
+            ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255,255,255,${star.opacity * pulse})`;
+            ctx.fill();
+
+            if (star.size > 1.15) {
+                ctx.beginPath();
+                ctx.moveTo(star.x - star.size * 2.5, star.y);
+                ctx.lineTo(star.x + star.size * 2.5, star.y);
+                ctx.moveTo(star.x, star.y - star.size * 2.5);
+                ctx.lineTo(star.x, star.y + star.size * 2.5);
+                ctx.strokeStyle = `rgba(255,255,255,${star.opacity * pulse * 0.35})`;
+                ctx.lineWidth = 0.5;
+                ctx.stroke();
+            }
+        }
+
+        requestAnimationFrame(animate);
+    }
+
+    window.addEventListener('resize', resize);
+    window.addEventListener('scroll', onScroll, {passive:true});
+    resize();
+    animate();
 }
 
 async function requireOwner() {
@@ -680,50 +807,239 @@ function parseBeatFilename(filename) {
     return {title:base||filename.replace(/\.[^/.]+$/,''),bpm,tags};
 }
 
-async function handleSupabaseUpload(event) {
-    const files=Array.from(event.target.files||[]);
-    if (!files.length) return;
-    const input=event.target;
-    input.disabled=true;
-    let uploaded=0;
-    const failures=[];
+/* COMBINED MP3 + WAV + ZIP UPLOADER */
+function normalizeBatchFilename(filename) {
+    return filename
+        .replace(/\.[^/.]+$/, '')
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, ' ');
+}
 
-    for (const file of files) {
-        try {
-            await requireOwner();
-            const extension=(file.name.split('.').pop()||'').toLowerCase();
-            if (extension!=='mp3' || (file.type && !['audio/mpeg','audio/mp3','audio/x-mpeg-3',''].includes(file.type))) {
-                throw new Error('Only MP3 files can be added as new beats. Upload WAV files using that beat’s WAV upload control.');
-            }
-            const safeName=file.name.normalize('NFKD').replace(/[^a-zA-Z0-9._-]+/g,'-');
-            const path=`audio/${crypto.randomUUID()}-${safeName}`;
-            const {error:storageError}=await supabaseClient.storage.from('beats').upload(path,file,{
-                cacheControl:'3600',upsert:false,contentType:'audio/mpeg'
-            });
-            if (storageError) throw storageError;
+function setupBatchDropzone() {
+    const zone = document.getElementById('beat-batch-dropzone');
+    if (!zone) return;
 
-            const meta=parseBeatFilename(file.name);
-            const {error:rowError}=await supabaseClient.from('beats').insert({
-                title:meta.title,bpm:meta.bpm,tags:meta.tags,audio_path:path,price:25,is_hidden:false
+    ['dragenter', 'dragover'].forEach(eventName => {
+        zone.addEventListener(eventName, event => {
+            event.preventDefault();
+            event.stopPropagation();
+            zone.classList.add('drag-active');
+        });
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        zone.addEventListener(eventName, event => {
+            event.preventDefault();
+            event.stopPropagation();
+            zone.classList.remove('drag-active');
+        });
+    });
+
+    zone.addEventListener('drop', event => {
+        const files = Array.from(event.dataTransfer.files || []);
+        if (files.length) {
+            handleBatchUpload({
+                target: {
+                    files,
+                    value: '',
+                    disabled: false
+                }
             });
-            if (rowError) {
-                await supabaseClient.storage.from('beats').remove([path]);
-                throw rowError;
-            }
-            uploaded++;
-        } catch(err) {
-            failures.push(`${file.name}: ${err.message||err}`);
         }
+    });
+}
+
+async function handleBatchUpload(event) {
+    const input = event.target;
+    const files = Array.from(input.files || []);
+    if (!files.length) return;
+
+    input.disabled = true;
+
+    const groups = new Map();
+    const failures = [];
+    let uploaded = 0;
+
+    try {
+        await requireOwner();
+
+        for (const file of files) {
+            const extension = (file.name.split('.').pop() || '').toLowerCase();
+
+            if (!['mp3', 'wav', 'zip'].includes(extension)) {
+                failures.push(`${file.name}: Unsupported file type.`);
+                continue;
+            }
+
+            if (file.size === 0) {
+                failures.push(`${file.name}: File is empty.`);
+                continue;
+            }
+
+            if (file.size > 500 * 1024 * 1024) {
+                failures.push(`${file.name}: File exceeds the 500 MB limit.`);
+                continue;
+            }
+
+            const key = normalizeBatchFilename(file.name);
+
+            if (!groups.has(key)) groups.set(key, {});
+
+            if (groups.get(key)[extension]) {
+                failures.push(`${file.name}: Duplicate ${extension.toUpperCase()} file.`);
+                continue;
+            }
+
+            groups.get(key)[extension] = file;
+        }
+
+        for (const [key, group] of groups) {
+            if (!group.mp3) {
+                failures.push(`${key}: Missing MP3. Each new beat needs an MP3 file.`);
+                continue;
+            }
+
+            let uploadedPaths = [];
+            let beatId = null;
+
+            try {
+                const mp3 = group.mp3;
+                const meta = parseBeatFilename(mp3.name);
+
+                const safeMp3Name = mp3.name.normalize('NFKD')
+                    .replace(/[^a-zA-Z0-9._-]+/g, '-');
+
+                const mp3Path = `audio/${crypto.randomUUID()}-${safeMp3Name}`;
+
+                const { error: mp3Error } = await supabaseClient.storage
+                    .from('beats')
+                    .upload(mp3Path, mp3, {
+                        cacheControl: '3600',
+                        upsert: false,
+                        contentType: 'audio/mpeg'
+                    });
+
+                if (mp3Error) throw mp3Error;
+                uploadedPaths.push(mp3Path);
+
+                const { data: beat, error: insertError } = await supabaseClient
+                    .from('beats')
+                    .insert({
+                        title: meta.title,
+                        bpm: meta.bpm,
+                        tags: meta.tags,
+                        audio_path: mp3Path,
+                        price: 25,
+                        is_hidden: false
+                    })
+                    .select()
+                    .single();
+
+                if (insertError) throw insertError;
+                beatId = beat.id;
+
+                const deliverables = {};
+
+                if (group.wav) {
+                    const wav = group.wav;
+                    const safeName = wav.name.normalize('NFKD')
+                        .replace(/[^a-zA-Z0-9._-]+/g, '-');
+
+                    const wavPath = `deliverables/${beat.id}/${crypto.randomUUID()}-${safeName}`;
+
+                    const { error } = await supabaseClient.storage
+                        .from('beats')
+                        .upload(wavPath, wav, {
+                            cacheControl: '3600',
+                            upsert: false,
+                            contentType: 'audio/wav'
+                        });
+
+                    if (error) throw error;
+
+                    uploadedPaths.push(wavPath);
+                    deliverables.wav_path = wavPath;
+                }
+
+                if (group.zip) {
+                    const zip = group.zip;
+                    const safeName = zip.name.normalize('NFKD')
+                        .replace(/[^a-zA-Z0-9._-]+/g, '-');
+
+                    const zipPath = `deliverables/${beat.id}/${crypto.randomUUID()}-${safeName}`;
+
+                    const { error } = await supabaseClient.storage
+                        .from('beats')
+                        .upload(zipPath, zip, {
+                            cacheControl: '3600',
+                            upsert: false,
+                            contentType: 'application/zip'
+                        });
+
+                    if (error) throw error;
+
+                    uploadedPaths.push(zipPath);
+                    deliverables.project_zip_path = zipPath;
+                }
+
+                if (Object.keys(deliverables).length) {
+                    const { error: updateError } = await supabaseClient
+                        .from('beats')
+                        .update(deliverables)
+                        .eq('id', beat.id);
+
+                    if (updateError) throw updateError;
+                }
+
+                uploaded++;
+
+            } catch (error) {
+                console.error(`Batch upload failed for ${key}:`, error);
+
+                if (beatId) {
+                    const { error: deleteError } = await supabaseClient
+                        .from('beats')
+                        .delete()
+                        .eq('id', beatId);
+
+                    if (deleteError) {
+                        console.error('Could not remove incomplete beat record:', deleteError);
+                    }
+                }
+
+                if (uploadedPaths.length) {
+                    const { error: cleanupError } = await supabaseClient.storage
+                        .from('beats')
+                        .remove(uploadedPaths);
+
+                    if (cleanupError) {
+                        console.error('Could not clean up incomplete upload:', cleanupError);
+                    }
+                }
+
+                failures.push(`${key}: ${error.message || error}`);
+            }
+        }
+
+    } catch (error) {
+        failures.push(error.message || String(error));
     }
 
-    input.disabled=false;
-    input.value='';
+    input.disabled = false;
+    input.value = '';
+
     await loadOwnerBeats();
     renderOwnerItems(document.getElementById('owner-search-input').value);
+
     if (failures.length) {
-        alert(`Uploaded ${uploaded} of ${files.length} files.\n\nFailed:\n${failures.slice(0,8).join('\n')}${failures.length>8?'\n…and more.':''}`);
+        alert(
+            `Successfully uploaded ${uploaded} beat(s).\n\nSome files need attention:\n\n` +
+            failures.slice(0, 12).join('\n') +
+            (failures.length > 12 ? '\n…and more.' : '')
+        );
     } else {
-        alert(`Successfully uploaded ${uploaded} MP3 beat file(s) to OUTTAMND.`);
+        alert(`Successfully uploaded ${uploaded} beat(s).`);
     }
 }
 
@@ -991,6 +1307,8 @@ function openLicenseModalFromPlayer() {
 
 window.onload=async()=>{
     updateCartCount();
+    initializeSpaceBackground();
+    setupBatchDropzone();
     await initCatalog();
 };
 </script>
