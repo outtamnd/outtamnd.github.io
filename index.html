@@ -268,9 +268,9 @@
             <div id="owner-panel-content" class="hidden flex-grow flex flex-col overflow-hidden">
                 <div class="p-4 bg-black border-b border-gray-900 flex flex-col sm:flex-row items-center justify-between gap-3">
                     <!-- Upload audio files to Supabase Storage -->
-                    <label class="w-full sm:w-auto bg-green-500 hover:bg-green-400 text-black text-xs font-bold px-4 py-2.5 rounded-xl cursor-pointer transition flex items-center justify-center gap-2 uppercase tracking-wider">
+                    <label class="relative overflow-hidden w-full sm:w-auto bg-green-500 hover:bg-green-400 text-black text-xs font-bold px-4 py-2.5 rounded-xl cursor-pointer transition flex items-center justify-center gap-2 uppercase tracking-wider">
                         <i class="fa-solid fa-cloud-arrow-up"></i> Upload Audio Files
-                        <input type="file" id="beat-upload-input" accept="audio/*" multiple onchange="handleSupabaseUpload(event)" class="hidden">
+                        <input type="file" id="beat-upload-input" accept="audio/*,.mp3,.wav,.m4a,.aac,.aiff,.flac,.ogg" multiple onchange="handleSupabaseUpload(event)" aria-label="Choose audio files from Files" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
                     </label>
                     <button onclick="ownerSignOut()" class="text-xs text-gray-400 hover:text-white border border-gray-800 rounded-lg px-3 py-2">Sign out</button>
                     <input type="text" oninput="filterOwnerList(this.value)" placeholder="Search catalog items..." class="w-full sm:w-56 bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-green-500">
