@@ -227,7 +227,7 @@
             <div class="p-5 border-b border-gray-900 flex items-center justify-between">
                 <div class="flex items-center gap-3">
                     <div class="w-3 h-3 rounded-full bg-green-500 animate-pulse"></div>
-                    <h3 class="font-extrabold font-syne text-white text-lg uppercase tracking-wider">Owner Catalog Moderator (Direct MP3 Drop)</h3>
+                    <h3 class="font-extrabold font-syne text-white text-lg uppercase tracking-wider">Owner Catalog Moderator (Direct Audio Link Mapping)</h3>
                 </div>
                 <div class="flex items-center gap-3">
                     <button onclick="closeOwnerModal()" class="text-gray-400 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
@@ -244,10 +244,10 @@
 
             <div id="owner-panel-content" class="hidden flex-grow flex flex-col overflow-hidden">
                 <div class="p-4 bg-black border-b border-gray-900 flex flex-col sm:flex-row items-center justify-between gap-3">
-                    <!-- DIRECT BLOB UPLOADER: NO URLS, NO 404S, PLAYS INSTANTLY -->
+                    <!-- DIRECT LINK MAPPER UPLOADER -->
                     <label class="w-full sm:w-auto bg-green-500 hover:bg-green-400 text-black text-xs font-bold px-4 py-2.5 rounded-xl cursor-pointer transition flex items-center justify-center gap-2 uppercase tracking-wider">
-                        <i class="fa-solid fa-cloud-arrow-up"></i> Drop MP3 Files Here (Select Any Amount)
-                        <input type="file" id="beat-upload-input" accept="audio/mp3,audio/*" multiple onchange="handleDirectBlobUpload(event)" class="hidden">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> Add Audio Filenames / URLs
+                        <input type="file" id="beat-upload-input" accept="audio/*" multiple onchange="handleDirectLinkUpload(event)" class="hidden">
                     </label>
                     <input type="text" oninput="filterOwnerList(this.value)" placeholder="Search catalog items..." class="w-full sm:w-56 bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-green-500">
                 </div>
@@ -265,8 +265,7 @@
     <script>
         const DEFAULT_PAYMENT_LINK = "https://buy.stripe.com/cNi5kF9RP4DI2m0goB2kw00";
 
-        // We store metadata only; audio data blobs are generated instantly via URL.createObjectURL so they NEVER buzz or 404
-        let allBeats = JSON.parse(localStorage.getItem('outtamnd_direct_beats') || 'null');
+        let allBeats = JSON.parse(localStorage.getItem('outtamnd_clean_beats') || 'null');
         let hiddenBeatIds = JSON.parse(localStorage.getItem('outtamnd_hidden_beats') || '[]');
         let currentTrack = null;
         let isPlaying = false;
@@ -279,6 +278,7 @@
 
         const audioPlayer = new Audio();
 
+        // Guaranteed working sample streams so playback works instantly out of the box
         const defaultSampleBeats = [
             { id: 0, title: "star (trap, glo)", bpm: "144 BPM", tags: ["TRAP", "GLO"], url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" },
             { id: 1, title: "crisis (emotional, drill)", bpm: "150 BPM", tags: ["DRILL"], url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" },
@@ -289,7 +289,7 @@
         function initCatalog() {
             if (!allBeats || allBeats.length === 0) {
                 allBeats = defaultSampleBeats;
-                localStorage.setItem('outtamnd_direct_beats', JSON.stringify(allBeats));
+                localStorage.setItem('outtamnd_clean_beats', JSON.stringify(allBeats));
             }
             populateGenres();
             renderBeats();
@@ -390,7 +390,7 @@
             audioPlayer.src = beat.url;
             audioPlayer.play().catch(err => {
                 console.log("Audio play error:", err);
-                alert("Could not play audio. Make sure the file loaded correctly.");
+                alert("Audio playback failed. Ensure the audio URL or file path is valid.");
             });
         }
 
@@ -516,7 +516,7 @@
                 <div class="bg-black border border-gray-900 p-3 rounded-xl flex items-center justify-between gap-3">
                     <div class="min-w-0 flex-grow">
                         <input type="text" value="${b.title}" onchange="renameBeat(${b.id}, this.value)" class="w-full bg-gray-950 border border-gray-800 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none focus:border-green-500 font-bold">
-                        <p class="text-[10px] text-gray-500 truncate mt-1">Ready for playback</p>
+                        <input type="text" value="${b.url}" onchange="updateBeatUrl(${b.id}, this.value)" class="w-full bg-gray-950 border border-gray-800 rounded-lg px-2.5 py-1 text-[10px] text-gray-400 focus:outline-none focus:border-green-500 mt-1" placeholder="Audio URL / path">
                     </div>
                     <div class="flex items-center gap-2 shrink-0">
                         ${ownerActiveTab === 'active' ? 
@@ -534,13 +534,20 @@
             const beat = allBeats.find(b => b.id === id);
             if (beat) {
                 beat.title = newTitle.toLowerCase().trim();
-                localStorage.setItem('outtamnd_direct_beats', JSON.stringify(allBeats));
+                localStorage.setItem('outtamnd_clean_beats', JSON.stringify(allBeats));
                 renderBeats();
             }
         }
 
-        // DIRECT BLOB GENERATOR: Turns uploaded MP3 files into instant, working object URLs so they NEVER buzz or 404
-        function handleDirectBlobUpload(event) {
+        function updateBeatUrl(id, newUrl) {
+            const beat = allBeats.find(b => b.id === id);
+            if (beat) {
+                beat.url = newUrl.trim();
+                localStorage.setItem('outtamnd_clean_beats', JSON.stringify(allBeats));
+            }
+        }
+
+        function handleDirectLinkUpload(event) {
             const files = event.target.files;
             if (!files || files.length === 0) return;
 
@@ -549,24 +556,23 @@
 
             Array.from(files).forEach(file => {
                 let cleanName = file.name.replace(/\.[^/.]+$/, "").replace(/[\_\-\+]+/g, ' ').toLowerCase();
-                let blobUrl = URL.createObjectURL(file); // Creates a bulletproof local stream of your exact audio file
                 
                 const newBeat = {
                     id: nextId++,
                     title: cleanName,
                     bpm: "140 BPM",
                     tags: ["TRAP"],
-                    url: blobUrl
+                    url: `audio/${file.name}` // Direct folder path mapping
                 };
                 allBeats.unshift(newBeat);
                 addedCount++;
             });
 
-            localStorage.setItem('outtamnd_direct_beats', JSON.stringify(allBeats));
+            localStorage.setItem('outtamnd_clean_beats', JSON.stringify(allBeats));
             populateGenres();
             renderBeats();
             renderOwnerItems();
-            alert(`Successfully loaded ${addedCount} MP3 files! Click play on any of them to listen instantly.`);
+            alert(`Added ${addedCount} tracks to catalog! Make sure your audio files are uploaded to your 'audio/' folder on GitHub.`);
         }
 
         function hideBeat(id) {
