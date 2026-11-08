@@ -349,7 +349,7 @@
             container.innerHTML = pageItems.map(beat => `
                 <div class="glass-card p-4 rounded-2xl flex items-center justify-between gap-4 transition group">
                     <div class="flex items-center gap-4 min-w-0">
-                        <button onclick="playBeat(${JSON.stringify(beat.id)})" class="w-12 h-12 rounded-xl bg-green-500/10 group-hover:bg-green-500 text-green-400 group-hover:text-black border border-green-500/30 flex items-center justify-center shrink-0 shadow-lg transition">
+                        <button type="button" onclick="window.playBeat(${JSON.stringify(beat.id)})" class="w-12 h-12 rounded-xl bg-green-500/10 group-hover:bg-green-500 text-green-400 group-hover:text-black border border-green-500/30 flex items-center justify-center shrink-0 shadow-lg transition" aria-label="Play ${escapeHtml(beat.title)}">
                             <i class="fa-solid fa-play text-xs ml-0.5"></i>
                         </button>
                         <div class="min-w-0">
@@ -386,8 +386,9 @@
         function handleSearch(val) { searchQuery = val; currentPage = 1; renderBeats(); }
         function handleGenreFilter(val) { currentGenre = val; currentPage = 1; renderBeats(); }
 
-        function playBeat(id) {
-            const beat = allBeats.find(b => b.id === id);
+        // Expose the catalog play handler explicitly for dynamically-rendered buttons.
+        window.playBeat = function playBeat(id) {
+            const beat = allBeats.find(b => String(b.id) === String(id));
             if (!beat) return;
             
             if (currentTrack && currentTrack.id === beat.id) {
@@ -407,7 +408,7 @@
                 console.log("Audio play error:", err);
                 alert("Playback error. Please ensure the file is a valid MP3.");
             });
-        }
+        };
 
         function togglePlayPause() {
             if (!currentTrack) { if (allBeats.length > 0) playBeat(allBeats[0].id); return; }
