@@ -602,7 +602,7 @@
 
             let nextId = allBeats.length > 0 ? Math.max(...allBeats.map(b => b.id)) + 1 : 0;
             let fileArray = Array.from(files);
-            let chunkSize = 50; // Processes files in safe chunks of 50 to prevent freezing
+            let chunkSize = 50; 
             let index = 0;
 
             function processChunk() {
@@ -626,7 +626,7 @@
                 });
 
                 index += chunkSize;
-                setTimeout(processChunk, 10); // Micro-delay allows the browser to breathe and prevents crashing
+                setTimeout(processChunk, 10); 
             }
 
             processChunk();
