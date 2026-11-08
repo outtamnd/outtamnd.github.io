@@ -269,7 +269,6 @@
 
     <!-- JAVASCRIPT LOGIC -->
     <script>
-        const DEFAULT_PAYMENT_LINK = "https://buy.stripe.com/cNi5kF9RP4DI2m0goB2kw00";
         const SUPABASE_URL = "https://fwghhsdvzhmikgtshpce.supabase.co";
         const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_WNS3xK7QeFDoHDrubfygig_fHKh9Rl_";
         const OWNER_USER_ID = "9c136ce2-1ec1-464c-80a5-7f4a79c0f805";
@@ -665,16 +664,38 @@
             alert(`You have ${cartCount} item(s) in your cart.`); 
         }
 
-        function checkoutBeat(beatId) {
+        async function startStripeCheckout(beatId) {
             const beat = allBeats.find(b => b.id === beatId);
-            if (beat) {
-                window.location.href = DEFAULT_PAYMENT_LINK;
+            if (!beat) {
+                alert('Could not find that beat. Please refresh the page and try again.');
+                return;
+            }
+
+            try {
+                const { data, error } = await supabaseClient.functions.invoke(
+                    'create-checkout-session',
+                    { body: { beatId: beat.id } }
+                );
+
+                if (error) throw error;
+                if (!data || !data.url) {
+                    throw new Error(data && data.error ? data.error : 'Stripe did not return a checkout link.');
+                }
+
+                window.location.assign(data.url);
+            } catch (error) {
+                console.error('Stripe checkout error:', error);
+                alert('Could not start checkout: ' + (error.message || 'Unknown error') + '\nPlease try again.');
             }
         }
 
-        function openLicenseModalFromPlayer() { 
+        function checkoutBeat(beatId) {
+            startStripeCheckout(beatId);
+        }
+
+        function openLicenseModalFromPlayer() {
             if (currentTrack) {
-                window.location.href = DEFAULT_PAYMENT_LINK;
+                startStripeCheckout(currentTrack.id);
             } else {
                 alert('Select a track first!');
             }
