@@ -278,6 +278,9 @@
         let ownerAuthenticated = false;
         let ownerActiveTab = 'active';
 
+        // Real HTML5 Audio Player Engine
+        const audioPlayer = new Audio();
+
         function parseBeatFilename(filename) {
             let clean = filename.replace(/\.[^/.]+$/, "");
             clean = clean.replace(/^(\+[\w\s]+\-\s*)+/i, '');
@@ -414,47 +417,39 @@
         function handleSearch(val) { searchQuery = val; currentPage = 1; renderBeats(); }
         function handleGenreFilter(val) { currentGenre = val; currentPage = 1; renderBeats(); }
 
-        let audioCtx = null;
-        let synthOsc = null;
-        let synthGain = null;
-
         function playBeat(id) {
             const beat = allBeats.find(b => b.id === id);
             if (!beat) return;
+            
+            if (currentTrack && currentTrack.id === beat.id) {
+                togglePlayPause();
+                return;
+            }
+
             currentTrack = beat;
             isPlaying = true;
 
             document.getElementById('player-title').innerText = beat.title;
             document.getElementById('player-subtitle').innerText = `${beat.bpm} • ${beat.tags.join(', ')}`;
             document.getElementById('play-pause-btn').innerHTML = '<i class="fa-solid fa-pause text-xs"></i>';
-            startSynthTone();
-        }
-
-        function startSynthTone() {
-            try {
-                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                if (synthOsc) { synthOsc.stop(); synthOsc.disconnect(); }
-                synthOsc = audioCtx.createOscillator();
-                synthGain = audioCtx.createGain();
-                synthOsc.type = 'sawtooth';
-                synthOsc.frequency.setValueAtTime(110, audioCtx.currentTime);
-                synthGain.gain.setValueAtTime(0.15, audioCtx.currentTime);
-                synthOsc.connect(synthGain);
-                synthGain.connect(audioCtx.destination);
-                synthOsc.start();
-            } catch(e) {}
+            
+            // Load and play actual MP3 file
+            audioPlayer.src = beat.url;
+            audioPlayer.play().catch(err => console.log("Audio play error:", err));
         }
 
         function togglePlayPause() {
             if (!currentTrack) { if (allBeats.length > 0) playBeat(allBeats[0].id); return; }
-            isPlaying = !isPlaying;
+            
             const btn = document.getElementById('play-pause-btn');
-            if (isPlaying) {
+            if (audioPlayer.paused) {
+                audioPlayer.play();
+                isPlaying = true;
                 btn.innerHTML = '<i class="fa-solid fa-pause text-xs"></i>';
-                startSynthTone();
             } else {
+                audioPlayer.pause();
+                isPlaying = false;
                 btn.innerHTML = '<i class="fa-solid fa-play text-xs ml-0.5"></i>';
-                if (synthOsc) { synthOsc.stop(); synthOsc = null; }
             }
         }
 
@@ -474,9 +469,34 @@
             else if (activeBeats.length > 0) playBeat(activeBeats[activeBeats.length - 1].id);
         }
 
-        function handleSeek(val) {}
+        audioPlayer.addEventListener('timeupdate', () => {
+            if (!audioPlayer.duration) return;
+            const curSec = Math.floor(audioPlayer.currentTime);
+            const durSec = Math.floor(audioPlayer.duration);
+            
+            document.getElementById('current-time').innerText = formatTime(curSec);
+            document.getElementById('total-time').innerText = formatTime(durSec);
+            document.getElementById('seek-bar').value = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+        });
+
+        audioPlayer.addEventListener('ended', () => {
+            playNextTrack();
+        });
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+
+        function handleSeek(val) {
+            if (audioPlayer.duration) {
+                audioPlayer.currentTime = (val / 100) * audioPlayer.duration;
+            }
+        }
+
         function handleVolume(val) {
-            if (synthGain && audioCtx) synthGain.gain.setValueAtTime(val * 0.2, audioCtx.currentTime);
+            audioPlayer.volume = val;
         }
 
         function switchTab(tab) {
