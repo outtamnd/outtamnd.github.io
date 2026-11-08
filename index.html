@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -253,6 +254,7 @@ const LICENSE_PRICES = { mp3:25, wav:50, unlimited:100 };
 const LICENSE_LABELS = { mp3:'MP3 Lease', wav:'WAV Trackout', unlimited:'Unlimited Exclusive' };
 let cartBeatIds = [];
 let choosingBeatId = null;
+let checkoutInProgress = false;
 
 function escapeHtml(value) {
     return String(value ?? '').replace(/[&<>"']/g, c => ({
@@ -508,7 +510,6 @@ function switchOwnerTab(tab) {
     renderOwnerItems(search);
 }
 
-/* OWNER CATALOG: includes WAV/ZIP upload controls for each beat. */
 function renderOwnerItems(query='') {
     const list=document.getElementById('owner-items-list');
     const items=allBeats.filter(b=>ownerActiveTab==='active'?!b.is_hidden:b.is_hidden);
@@ -575,7 +576,6 @@ function renderOwnerItems(query='') {
 
 function filterOwnerList(q) { renderOwnerItems(q); }
 
-/* Uploads one optional deliverable to the existing "beats" bucket. */
 async function uploadBeatDeliverable(event,beatId,column) {
     const input=event.target;
     const file=input.files && input.files[0];
@@ -630,7 +630,6 @@ async function uploadBeatDeliverable(event,beatId,column) {
             throw updateError;
         }
 
-        // Remove the previous version only after the new path was saved successfully.
         const oldPath=beat[column];
         if (oldPath && oldPath!==path) {
             const {error:removeError}=await supabaseClient.storage.from('beats').remove([oldPath]);
@@ -681,7 +680,6 @@ function parseBeatFilename(filename) {
     return {title:base||filename.replace(/\.[^/.]+$/,''),bpm,tags};
 }
 
-/* New beat uploads are MP3 only. WAV files belong in the per-beat WAV upload control. */
 async function handleSupabaseUpload(event) {
     const files=Array.from(event.target.files||[]);
     if (!files.length) return;
@@ -762,7 +760,7 @@ window.addEventListener('keydown',e=>{
     }
 });
 
-/* Cart */
+/* CART */
 try {
     const savedCart=JSON.parse(localStorage.getItem('outtamnd_cart')||'[]');
     cartBeatIds=Array.isArray(savedCart)?savedCart.map(item=>{
@@ -782,10 +780,12 @@ function saveCart() {
     try { localStorage.setItem('outtamnd_cart',JSON.stringify(cartBeatIds)); }
     catch(error) { console.warn('Could not save cart:',error); }
 }
+
 function updateCartCount() {
     const count=document.getElementById('cart-count');
     if (count) count.innerText=cartBeatIds.length;
 }
+
 function openLicenseChooser(id) {
     const beat=allBeats.find(b=>String(b.id)===String(id));
     if (!beat) { alert('That beat is not loaded yet. Refresh the page and try again.'); return; }
@@ -795,18 +795,21 @@ function openLicenseChooser(id) {
     modal.classList.remove('hidden');
     modal.classList.add('flex');
 }
+
 function closeLicenseChooser() {
     const modal=document.getElementById('license-chooser-modal');
     modal.classList.add('hidden');
     modal.classList.remove('flex');
     choosingBeatId=null;
 }
+
 function chooseLicense(type) {
     if (!choosingBeatId||!LICENSE_PRICES[type]) return;
     addToCart(choosingBeatId,type);
     closeLicenseChooser();
     renderCart();
 }
+
 function addToCart(id,type='mp3') {
     const beat=allBeats.find(b=>String(b.id)===String(id));
     if (!beat) { alert('That beat is not loaded yet. Refresh the page and try again.'); return; }
@@ -815,7 +818,9 @@ function addToCart(id,type='mp3') {
     if (existing) {
         existing.licenseType=type;
         alert(`${beat.title} is already in your cart. Its license has been changed to ${LICENSE_LABELS[type]}.`);
-    } else cartBeatIds.push({beatId:beat.id,licenseType:type});
+    } else {
+        cartBeatIds.push({beatId:beat.id,licenseType:type});
+    }
     saveCart();
     updateCartCount();
 }
@@ -824,13 +829,19 @@ window.addToCart=addToCart;
 function changeCartLicense(id,type) {
     if (!LICENSE_PRICES[type]) return;
     const item=cartBeatIds.find(entry=>String(entry.beatId)===String(id));
-    if (item) { item.licenseType=type; saveCart(); renderCart(); }
+    if (item) {
+        item.licenseType=type;
+        saveCart();
+        renderCart();
+    }
 }
+
 function renderCart() {
     const container=document.getElementById('cart-items');
     const valid=cartBeatIds.map(item=>({
         item,beat:allBeats.find(b=>String(b.id)===String(item.beatId))
     })).filter(e=>e.beat&&!e.beat.is_exclusive_sold&&!e.beat.is_hidden);
+
     cartBeatIds=valid.map(e=>e.item);
     saveCart();
     updateCartCount();
@@ -841,11 +852,20 @@ function renderCart() {
         container.innerHTML=valid.map(({item,beat})=>`
             <div class="bg-black border border-gray-900 rounded-xl p-3 space-y-3">
                 <div class="flex items-center justify-between gap-3">
-                    <div class="min-w-0"><p class="text-sm font-bold text-white truncate">${escapeHtml(beat.title)}</p><p class="text-xs text-gray-500 mt-1">${escapeHtml(beat.bpm||'')}</p></div>
-                    <button onclick="removeFromCart(${JSON.stringify(beat.id)})" class="text-gray-500 hover:text-red-400 shrink-0" aria-label="Remove ${escapeHtml(beat.title)}"><i class="fa-solid fa-trash"></i></button>
+                    <div class="min-w-0">
+                        <p class="text-sm font-bold text-white truncate">${escapeHtml(beat.title)}</p>
+                        <p class="text-xs text-gray-500 mt-1">${escapeHtml(beat.bpm||'')}</p>
+                    </div>
+                    <button
+                        type="button"
+                        onclick="removeFromCart('${escapeHtml(beat.id)}')"
+                        class="text-gray-500 hover:text-red-400 shrink-0"
+                        aria-label="Remove ${escapeHtml(beat.title)}">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
                 </div>
                 <div class="flex items-center justify-between gap-3">
-                    <select aria-label="License for ${escapeHtml(beat.title)}" onchange="changeCartLicense(${JSON.stringify(beat.id)},this.value)" class="min-w-0 flex-1 bg-gray-950 border border-gray-800 rounded-lg px-3 py-2 text-xs text-white">
+                    <select aria-label="License for ${escapeHtml(beat.title)}" onchange="changeCartLicense('${escapeHtml(beat.id)}',this.value)" class="min-w-0 flex-1 bg-gray-950 border border-gray-800 rounded-lg px-3 py-2 text-xs text-white">
                         <option value="mp3" ${item.licenseType==='mp3'?'selected':''}>MP3 Lease — $25</option>
                         <option value="wav" ${item.licenseType==='wav'?'selected':''}>WAV Trackout — $50</option>
                         <option value="unlimited" ${item.licenseType==='unlimited'?'selected':''}>Unlimited Exclusive — $100</option>
@@ -854,55 +874,116 @@ function renderCart() {
                 </div>
             </div>`).join('');
     }
+
     const total=valid.reduce((sum,e)=>sum+LICENSE_PRICES[e.item.licenseType],0);
     document.getElementById('cart-total').innerText=`$${total.toFixed(2)}`;
-    document.getElementById('cart-checkout-button').disabled=valid.length===0;
+
+    const checkoutButton=document.getElementById('cart-checkout-button');
+    checkoutButton.disabled=valid.length===0||checkoutInProgress;
+    checkoutButton.innerText=checkoutInProgress?'Preparing checkout…':'Checkout';
 }
+
 function toggleCart() {
     renderCart();
     const modal=document.getElementById('cart-modal');
     modal.classList.remove('hidden');
     modal.classList.add('flex');
 }
+
 function closeCart() {
     const modal=document.getElementById('cart-modal');
     modal.classList.add('hidden');
     modal.classList.remove('flex');
 }
+
 function removeFromCart(id) {
     cartBeatIds=cartBeatIds.filter(item=>String(item.beatId)!==String(id));
     saveCart();
     renderCart();
 }
+
 function clearCart() {
     cartBeatIds=[];
     saveCart();
     renderCart();
 }
+
 async function checkoutCart() {
-    if (!cartBeatIds.length) return;
+    if (!cartBeatIds.length || checkoutInProgress) return;
     await startStripeCheckout([...cartBeatIds]);
 }
+
 async function startStripeCheckout(items) {
-    const selected=items.map(item=>({beatId:item.beatId,licenseType:item.licenseType}));
-    if (!selected.length||selected.some(item=>!allBeats.some(b=>String(b.id)===String(item.beatId)&&!b.is_hidden&&!b.is_exclusive_sold))) {
+    if (checkoutInProgress) return;
+
+    const selected=items.map(item=>({
+        beatId:item.beatId,
+        licenseType:item.licenseType
+    }));
+
+    if (
+        !selected.length ||
+        selected.some(item=>
+            !allBeats.some(b=>
+                String(b.id)===String(item.beatId)&&
+                !b.is_hidden&&
+                !b.is_exclusive_sold
+            )
+        )
+    ) {
         alert('One or more beats could not be found or are no longer available. Please refresh the page and try again.');
         return;
     }
+
+    checkoutInProgress=true;
+
     const button=document.getElementById('cart-checkout-button');
-    if (button) { button.disabled=true; button.innerText='Preparing checkout…'; }
+
+    if (button) {
+        button.disabled=true;
+        button.innerText='Preparing checkout…';
+    }
+
     try {
-        const {data,error}=await supabaseClient.functions.invoke('create-checkout-session',{body:{items:selected}});
+        const {data,error}=await supabaseClient.functions.invoke(
+            'create-checkout-session',
+            {body:{items:selected}}
+        );
+
         if (error) throw error;
-        if (!data||!data.url) throw new Error(data&&data.error?data.error:'Stripe did not return a checkout link.');
+
+        if (!data||!data.url) {
+            throw new Error(
+                data&&data.error
+                    ? data.error
+                    : 'Stripe did not return a checkout link.'
+            );
+        }
+
         window.location.assign(data.url);
+
     } catch(error) {
         console.error('Stripe checkout error:',error);
-        alert('Could not start checkout: '+(error.message||'Unknown error')+'\nPlease try again.');
-        if (button) { button.disabled=false; button.innerText='Checkout'; }
+
+        checkoutInProgress=false;
+
+        if (button) {
+            button.disabled=false;
+            button.innerText='Checkout';
+        }
+
+        alert(
+            'Could not start checkout: '+
+            (error.message||'Unknown error')+
+            '\nPlease try again.'
+        );
     }
 }
-function checkoutBeat(beatId) { openLicenseChooser(beatId); }
+
+function checkoutBeat(beatId) {
+    openLicenseChooser(beatId);
+}
+
 function openLicenseModalFromPlayer() {
     if (currentTrack) openLicenseChooser(currentTrack.id);
     else alert('Select a track first!');
