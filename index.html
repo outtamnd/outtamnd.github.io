@@ -330,14 +330,19 @@
                     if (!res.ok) throw new Error('Failed');
                     const data = await res.json();
                     
-                    if (Array.isArray(data)) {
-                        allBeats = data.map((item, idx) => ({
-                            id: item.id !== undefined ? parseInt(item.id) : idx,
-                            title: (item.title || item.file || "untitled beat").toLowerCase(),
-                            bpm: (item.bpm ? item.bpm + ' BPM' : '140 BPM'),
-                            tags: [item.genre ? item.genre.toUpperCase() : 'TRAP'],
-                            url: item.file ? `audio/${item.file}` : (item.url || item.audio || `audio/${item.title}.mp3`)
-                        }));
+                    if (Array.isArray(data) && data.length > 0) {
+                        allBeats = data.map((item, idx) => {
+                            if (typeof item === 'string') {
+                                return { id: idx, ...parseBeatFilename(item) };
+                            }
+                            return {
+                                id: item.id !== undefined ? parseInt(item.id) : idx,
+                                title: (item.title || item.file || "untitled beat").toLowerCase(),
+                                bpm: (item.bpm ? item.bpm + ' BPM' : '140 BPM'),
+                                tags: [item.genre ? item.genre.toUpperCase() : 'TRAP'],
+                                url: item.file ? (item.file.startsWith('audio/') ? item.file : `audio/${item.file}`) : (item.url || item.audio || `audio/${item.title}.mp3`)
+                            };
+                        });
                     }
                 } catch (err) {
                     console.log("Using fallback catalog due to load error:", err);
