@@ -8,852 +8,910 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
-        
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #040604;
-            color: #f3f4f6;
-        }
-
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #040604; color: #f3f4f6; }
         .font-syne { font-family: 'Syne', sans-serif; }
-
-        .glow-green {
-            box-shadow: 0 0 25px -5px rgba(34, 197, 94, 0.35);
-        }
-
-        .glow-green-sm {
-            box-shadow: 0 0 15px -3px rgba(34, 197, 94, 0.4);
-        }
-
-        .glass-card {
-            background: linear-gradient(135deg, rgba(14, 24, 16, 0.7) 0%, rgba(6, 10, 7, 0.8) 100%);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-        }
-
-        .glass-card:hover {
-            border-color: rgba(34, 197, 94, 0.5);
-            box-shadow: 0 0 20px -5px rgba(34, 197, 94, 0.3);
-        }
-
-        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #040604; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #142317; border-radius: 4px; }
+        .glow-green { box-shadow: 0 0 25px -5px rgba(34,197,94,.35); }
+        .glow-green-sm { box-shadow: 0 0 15px -3px rgba(34,197,94,.4); }
+        .glass-card { background: linear-gradient(135deg,rgba(14,24,16,.7),rgba(6,10,7,.8)); backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,.06); }
+        .glass-card:hover { border-color:rgba(34,197,94,.5); box-shadow:0 0 20px -5px rgba(34,197,94,.3); }
+        .custom-scrollbar::-webkit-scrollbar { width:5px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background:#040604; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background:#142317; border-radius:4px; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between selection:bg-green-500 selection:text-black">
 
-    <!-- HEADER -->
-    <header class="sticky top-0 z-40 bg-[#040604]/90 backdrop-blur-xl border-b border-gray-900 px-6 py-4 flex items-center justify-between">
-        <div class="flex items-center gap-10">
-            <div class="flex items-center gap-3 cursor-pointer group" onclick="switchTab('beats')">
-                <img src="logo.png" alt="OUTTAMND" class="h-10 w-auto object-contain filter drop-shadow-[0_0_8px_rgba(34,197,94,0.4)] group-hover:scale-105 transition">
-            </div>
-            <nav class="hidden md:flex items-center gap-8 text-xs font-bold uppercase tracking-widest text-gray-400">
-                <button onclick="switchTab('beats')" id="nav-beats" class="text-white transition hover:text-green-400">Vault Beats</button>
-                <button onclick="switchTab('kits')" id="nav-kits" class="transition hover:text-green-400">Drum Kits</button>
-                <button onclick="switchTab('licensing')" id="nav-licensing" class="transition hover:text-green-400">Licensing</button>
-                <button onclick="switchTab('contact')" id="nav-contact" class="transition hover:text-green-400">Contact</button>
-            </nav>
+<header class="sticky top-0 z-40 bg-[#040604]/90 backdrop-blur-xl border-b border-gray-900 px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-10">
+        <div class="flex items-center gap-3 cursor-pointer group" onclick="switchTab('beats')">
+            <img src="logo.png" alt="OUTTAMND" class="h-10 w-auto object-contain filter drop-shadow-[0_0_8px_rgba(34,197,94,0.4)] group-hover:scale-105 transition">
         </div>
+        <nav class="hidden md:flex items-center gap-8 text-xs font-bold uppercase tracking-widest text-gray-400">
+            <button onclick="switchTab('beats')" id="nav-beats" class="text-white transition hover:text-green-400">Vault Beats</button>
+            <button onclick="switchTab('kits')" id="nav-kits" class="transition hover:text-green-400">Drum Kits</button>
+            <button onclick="switchTab('licensing')" id="nav-licensing" class="transition hover:text-green-400">Licensing</button>
+            <button onclick="switchTab('contact')" id="nav-contact" class="transition hover:text-green-400">Contact</button>
+        </nav>
+    </div>
+    <div class="flex items-center gap-3">
+        <button onclick="openOwnerModal()" title="Owner Panel" class="w-10 h-10 rounded-xl bg-gray-950 border border-gray-800 flex items-center justify-center text-gray-400 hover:text-green-400 hover:border-green-500/50 transition">
+            <i class="fa-solid fa-lock text-xs"></i>
+        </button>
+        <button onclick="toggleCart()" class="flex items-center gap-2 bg-gray-950 border border-gray-800 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider hover:border-green-500/50 transition">
+            <i class="fa-solid fa-cart-shopping text-green-400"></i>
+            <span id="cart-count" class="bg-green-500 text-black text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center shadow-lg shadow-green-500/50">0</span>
+        </button>
+    </div>
+</header>
 
-        <div class="flex items-center gap-3">
-            <button onclick="openOwnerModal()" title="Owner Panel" class="w-10 h-10 rounded-xl bg-gray-950 border border-gray-800 flex items-center justify-center text-gray-400 hover:text-green-400 hover:border-green-500/50 transition">
-                <i class="fa-solid fa-lock text-xs"></i>
-            </button>
-            <button onclick="toggleCart()" class="flex items-center gap-2 bg-gray-950 border border-gray-800 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider hover:border-green-500/50 transition">
-                <i class="fa-solid fa-cart-shopping text-green-400"></i>
-                <span id="cart-count" class="bg-green-500 text-black text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center shadow-lg shadow-green-500/50">0</span>
-            </button>
+<main class="max-w-6xl w-full mx-auto px-4 py-8 flex-grow">
+    <section class="relative overflow-hidden rounded-2xl border border-gray-800 bg-gradient-to-r from-gray-950 to-black p-6 sm:p-8 mb-8">
+        <div class="absolute -right-16 -bottom-24 w-72 h-72 bg-green-500/5 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="relative z-10 max-w-2xl space-y-2">
+            <p class="text-[10px] sm:text-xs font-bold uppercase tracking-[0.22em] text-green-400">OUTTAMND · BEAT STORE</p>
+            <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight text-white">Find your sound.</h1>
+            <p class="text-sm text-gray-400 max-w-lg leading-relaxed">Browse beats, preview tracks, and choose the license that fits your next release.</p>
         </div>
-    </header>
+    </section>
 
-    <!-- MAIN CONTENT -->
-    <main class="max-w-6xl w-full mx-auto px-4 py-8 flex-grow">
-        
-        <!-- HERO BANNER -->
-        <section class="relative overflow-hidden rounded-2xl border border-gray-800 bg-gradient-to-r from-gray-950 to-black p-6 sm:p-8 mb-8">
-            <div class="absolute -right-16 -bottom-24 w-72 h-72 bg-green-500/5 rounded-full blur-3xl pointer-events-none"></div>
-            <div class="relative z-10 max-w-2xl space-y-2">
-                <p class="text-[10px] sm:text-xs font-bold uppercase tracking-[0.22em] text-green-400">OUTTAMND · BEAT STORE</p>
-                <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight text-white">Find your sound.</h1>
-                <p class="text-sm text-gray-400 max-w-lg leading-relaxed">Browse beats, preview tracks, and choose the license that fits your next release.</p>
+    <div id="view-beats" class="space-y-6">
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-gray-950 border border-gray-900 p-4 sm:p-5 rounded-2xl">
+            <div class="flex items-center gap-3">
+                <i class="fa-solid fa-sliders text-green-400 text-sm"></i>
+                <span class="text-xs font-bold uppercase tracking-widest text-gray-300">Filter Vault</span>
             </div>
-        </section>
-
-        <!-- BEATS VIEW -->
-        <div id="view-beats" class="space-y-6">
-            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-gray-950 border border-gray-900 p-4 sm:p-5 rounded-2xl">
-                <div class="flex items-center gap-3">
-                    <i class="fa-solid fa-sliders text-green-400 text-sm"></i>
-                    <span class="text-xs font-bold uppercase tracking-widest text-gray-300">Filter Vault</span>
+            <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                <div class="relative flex-grow md:w-72">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
+                    <input type="text" id="search-input" oninput="handleSearch(this.value)" placeholder="Search title, tag, or BPM..." class="w-full bg-black border border-gray-800 rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-green-500 transition">
                 </div>
-                <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
-                    <div class="relative flex-grow md:w-72">
-                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
-                        <input type="text" id="search-input" oninput="handleSearch(this.value)" placeholder="Search title, tag, or BPM..." class="w-full bg-black border border-gray-800 rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-green-500 transition">
+                <select id="genre-select" onchange="handleGenreFilter(this.value)" class="bg-black border border-gray-800 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-green-500 transition">
+                    <option value="all">All Genres</option>
+                </select>
+            </div>
+        </div>
+        <div id="beats-container" class="space-y-3"></div>
+        <div id="pagination-container" class="flex items-center justify-center gap-2 pt-4"></div>
+    </div>
+
+    <div id="view-kits" class="hidden space-y-6">
+        <h1 class="text-3xl font-extrabold font-syne text-white uppercase">Drum Kits & Soundsets</h1>
+        <p class="text-sm text-gray-400">Custom 808s, Roland XV-5080 presets, and Glo loops engineered directly by Outtamnd.</p>
+    </div>
+
+    <div id="view-licensing" class="hidden space-y-6">
+        <h1 class="text-3xl font-extrabold font-syne text-white uppercase">Licensing Breakdown</h1>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
+            <div class="glass-card p-6 rounded-2xl space-y-4">
+                <h3 class="text-xl font-extrabold font-syne text-green-400 uppercase">MP3 Lease</h3>
+                <p class="text-3xl font-black text-white">$25.00</p>
+                <ul class="text-xs text-gray-400 space-y-2">
+                    <li><i class="fa-solid fa-check text-green-400 mr-2"></i> Untagged Audio File</li>
+                    <li><i class="fa-solid fa-check text-green-400 mr-2"></i> 100,000 Online Streams</li>
+                    <li><i class="fa-solid fa-check text-green-400 mr-2"></i> Instant Download</li>
+                </ul>
+            </div>
+            <div class="glass-card p-6 rounded-2xl space-y-4 border-green-500/50 glow-green-sm">
+                <h3 class="text-xl font-extrabold font-syne text-green-400 uppercase">WAV Trackout</h3>
+                <p class="text-3xl font-black text-white">$50.00</p>
+                <ul class="text-xs text-gray-400 space-y-2">
+                    <li><i class="fa-solid fa-check text-green-400 mr-2"></i> High Quality WAV Stems</li>
+                    <li><i class="fa-solid fa-check text-green-400 mr-2"></i> 500,000 Online Streams</li>
+                    <li><i class="fa-solid fa-check text-green-400 mr-2"></i> Full Performance Rights</li>
+                </ul>
+            </div>
+            <div class="glass-card p-6 rounded-2xl space-y-4">
+                <h3 class="text-xl font-extrabold font-syne text-green-400 uppercase">Unlimited Exclusive</h3>
+                <p class="text-3xl font-black text-white">$100.00</p>
+                <ul class="text-xs text-gray-400 space-y-2">
+                    <li><i class="fa-solid fa-check text-green-400 mr-2"></i> Unlimited commercial use & streams</li>
+                    <li><i class="fa-solid fa-check text-green-400 mr-2"></i> Full Stems + Trackout</li>
+                    <li><i class="fa-solid fa-check text-green-400 mr-2"></i> Exclusive license — one buyer only</li>
+                    <li><i class="fa-solid fa-check text-green-400 mr-2"></i> Producer retains copyright</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-contact" class="hidden space-y-6 max-w-2xl">
+        <h1 class="text-3xl font-extrabold font-syne text-white uppercase">Direct Placement & Custom Beats</h1>
+        <p class="text-sm text-gray-400">Reach out for custom production, exclusive rights lock-in, or multi-beat placement packages.</p>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4">
+            <a href="https://instagram.com/outtamnd.mp3" target="_blank" class="glass-card p-5 rounded-2xl flex flex-col items-center text-center gap-3 group">
+                <div class="w-12 h-12 rounded-xl bg-green-500/10 text-green-400 flex items-center justify-center text-xl group-hover:scale-110 transition"><i class="fa-brands fa-instagram"></i></div>
+                <div><h4 class="font-bold text-white text-xs uppercase tracking-wider">Instagram</h4><p class="text-[11px] text-gray-400 mt-0.5">@outtamnd.mp3</p></div>
+            </a>
+            <a href="https://x.com/0uttamnd" target="_blank" class="glass-card p-5 rounded-2xl flex flex-col items-center text-center gap-3 group">
+                <div class="w-12 h-12 rounded-xl bg-green-500/10 text-green-400 flex items-center justify-center text-xl group-hover:scale-110 transition"><i class="fa-brands fa-x-twitter"></i></div>
+                <div><h4 class="font-bold text-white text-xs uppercase tracking-wider">X (Twitter)</h4><p class="text-[11px] text-gray-400 mt-0.5">@0uttamnd</p></div>
+            </a>
+            <a href="mailto:outtamnd@gmail.com" class="glass-card p-5 rounded-2xl flex flex-col items-center text-center gap-3 group">
+                <div class="w-12 h-12 rounded-xl bg-green-500/10 text-green-400 flex items-center justify-center text-xl group-hover:scale-110 transition"><i class="fa-solid fa-envelope"></i></div>
+                <div><h4 class="font-bold text-white text-xs uppercase tracking-wider">Email</h4><p class="text-[11px] text-gray-400 mt-0.5 truncate max-w-[140px]">outtamnd@gmail.com</p></div>
+            </a>
+        </div>
+    </div>
+</main>
+
+<div class="sticky bottom-0 z-50 bg-[#040604]/95 backdrop-blur-2xl border-t border-green-900/40 px-4 py-3 shadow-[0_-10px_30px_rgba(0,0,0,0.9)]">
+    <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-4 w-full md:w-1/3">
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-green-950 to-black border border-green-500/40 flex items-center justify-center text-green-400 shrink-0 glow-green-sm">
+                <i id="player-icon" class="fa-solid fa-compact-disc text-xl animate-spin" style="animation-duration:8s;"></i>
+            </div>
+            <div class="overflow-hidden min-w-0">
+                <h4 id="player-title" class="text-sm font-extrabold text-white truncate font-syne uppercase">SELECT A BEAT TO PREVIEW</h4>
+                <p id="player-subtitle" class="text-[11px] text-green-400 font-semibold truncate tracking-wider uppercase">0 BPM • READY FOR PLACEMENT</p>
+            </div>
+        </div>
+        <div class="flex flex-col items-center gap-1.5 w-full md:w-1/3">
+            <div class="flex items-center gap-6">
+                <button onclick="playPrevTrack()" class="text-gray-400 hover:text-green-400 transition"><i class="fa-solid fa-backward-step"></i></button>
+                <button onclick="togglePlayPause()" id="play-pause-btn" class="w-11 h-11 rounded-full bg-green-500 hover:bg-green-400 text-black flex items-center justify-center shadow-lg shadow-green-500/40 transition hover:scale-105"><i class="fa-solid fa-play text-xs ml-0.5"></i></button>
+                <button onclick="playNextTrack()" class="text-gray-400 hover:text-green-400 transition"><i class="fa-solid fa-forward-step"></i></button>
+            </div>
+            <div class="flex items-center gap-3 w-full text-[10px] text-gray-500 font-mono">
+                <span id="current-time">0:00</span>
+                <input type="range" id="seek-bar" value="0" min="0" max="100" oninput="handleSeek(this.value)" class="w-full h-1 bg-gray-900 rounded-lg appearance-none cursor-pointer accent-green-400">
+                <span id="total-time">0:00</span>
+            </div>
+        </div>
+        <div class="flex items-center justify-end gap-4 w-full md:w-1/3">
+            <div class="hidden md:flex items-center gap-2">
+                <i class="fa-solid fa-volume-high text-gray-500 text-xs"></i>
+                <input type="range" min="0" max="1" step="0.05" value="0.8" oninput="handleVolume(this.value)" class="w-20 h-1 bg-gray-900 rounded-lg appearance-none cursor-pointer accent-green-400">
+            </div>
+            <button onclick="openLicenseModalFromPlayer()" class="bg-green-500 hover:bg-green-400 text-black font-extrabold text-xs uppercase tracking-wider px-6 py-2.5 rounded-xl shadow-lg shadow-green-500/30 transition hover:scale-105">Choose License</button>
+        </div>
+    </div>
+</div>
+
+<div id="license-chooser-modal" class="fixed inset-0 z-[70] bg-black/90 backdrop-blur-md hidden items-center justify-center p-4">
+    <div class="bg-gray-950 border border-green-900/40 w-full max-w-md rounded-2xl overflow-hidden shadow-2xl">
+        <div class="p-5 border-b border-gray-900 flex items-center justify-between">
+            <div class="min-w-0"><h2 class="text-lg font-extrabold text-white uppercase">Choose a License</h2><p id="license-chooser-beat" class="text-xs text-gray-500 mt-1 truncate"></p></div>
+            <button onclick="closeLicenseChooser()" class="text-gray-400 hover:text-white text-xl" aria-label="Close license chooser"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="p-5 space-y-3">
+            <button onclick="chooseLicense('mp3')" class="w-full text-left p-4 rounded-xl border border-gray-800 hover:border-green-500 bg-black transition"><span class="flex justify-between items-center"><strong class="text-white">MP3 Lease</strong><strong class="text-green-400">$25</strong></span><span class="block text-xs text-gray-500 mt-1">Non-exclusive · MP3 file</span></button>
+            <button onclick="chooseLicense('wav')" class="w-full text-left p-4 rounded-xl border border-gray-800 hover:border-green-500 bg-black transition"><span class="flex justify-between items-center"><strong class="text-white">WAV Trackout</strong><strong class="text-green-400">$50</strong></span><span class="block text-xs text-gray-500 mt-1">Non-exclusive · WAV and trackout</span></button>
+            <button onclick="chooseLicense('unlimited')" class="w-full text-left p-4 rounded-xl border border-green-700/60 hover:border-green-400 bg-green-950/20 transition"><span class="flex justify-between items-center"><strong class="text-white">Unlimited Exclusive</strong><strong class="text-green-400">$100</strong></span><span class="block text-xs text-gray-400 mt-1">Exclusive license · one buyer · copyright remains with OUTTAMND</span></button>
+            <p class="text-[11px] text-gray-500 leading-relaxed">An exclusive purchase prevents future sales of this beat. Any earlier non-exclusive licenses remain valid.</p>
+        </div>
+    </div>
+</div>
+
+<div id="cart-modal" class="fixed inset-0 z-[60] bg-black/90 backdrop-blur-md hidden items-center justify-center p-4">
+    <div class="bg-gray-950 border border-green-900/40 w-full max-w-xl rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[85vh]">
+        <div class="p-5 border-b border-gray-900 flex items-center justify-between">
+            <div><h2 class="text-lg font-extrabold font-syne text-white uppercase">Your Cart</h2><p class="text-xs text-gray-500 mt-1">Review your beats before checkout</p></div>
+            <button onclick="closeCart()" class="text-gray-400 hover:text-white text-xl" aria-label="Close cart"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div id="cart-items" class="p-5 space-y-3 overflow-y-auto flex-grow"><p class="text-center text-gray-500 py-8 text-sm">Your cart is empty.</p></div>
+        <div class="p-5 border-t border-gray-900 space-y-3">
+            <div class="flex items-center justify-between text-sm"><span class="text-gray-400">Estimated total</span><strong id="cart-total" class="text-white">$0.00</strong></div>
+            <button id="cart-checkout-button" onclick="checkoutCart()" class="w-full bg-green-500 hover:bg-green-400 text-black font-extrabold text-xs uppercase tracking-wider py-3 rounded-xl transition disabled:opacity-40 disabled:cursor-not-allowed" disabled>Checkout</button>
+            <button onclick="clearCart()" class="w-full text-xs text-gray-500 hover:text-red-400 transition">Clear cart</button>
+        </div>
+    </div>
+</div>
+
+<div id="owner-modal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md hidden flex items-center justify-center p-4">
+    <div class="bg-gray-950 border border-green-900/40 w-full max-w-2xl rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[85vh]">
+        <div class="p-5 border-b border-gray-900 flex items-center justify-between">
+            <div class="flex items-center gap-3"><div class="w-3 h-3 rounded-full bg-green-500 animate-pulse"></div><h3 class="font-extrabold font-syne text-white text-lg uppercase tracking-wider">OUTTAMND Owner Catalog</h3></div>
+            <button onclick="closeOwnerModal()" class="text-gray-400 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <div id="owner-auth-section" class="p-8 space-y-4">
+            <p class="text-xs text-gray-400">Sign in with your OUTTAMND owner account.</p>
+            <input type="email" id="owner-email-input" autocomplete="username" placeholder="Owner email" class="w-full bg-black border border-gray-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-green-500">
+            <div class="flex gap-3">
+                <input type="password" id="owner-pass-input" autocomplete="current-password" placeholder="Password" class="flex-grow bg-black border border-gray-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-green-500" onkeydown="if(event.key==='Enter') verifyOwnerPassword()">
+                <button onclick="verifyOwnerPassword()" class="bg-green-500 hover:bg-green-400 text-black text-xs font-bold px-6 py-2 rounded-xl transition uppercase">Sign in</button>
+            </div>
+            <p id="owner-auth-error" class="text-xs text-red-400"></p>
+        </div>
+
+        <div id="owner-panel-content" class="hidden flex-grow flex flex-col overflow-hidden">
+            <div class="p-4 bg-black border-b border-gray-900 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <label class="relative overflow-hidden w-full sm:w-auto bg-green-500 hover:bg-green-400 text-black text-xs font-bold px-4 py-2.5 rounded-xl cursor-pointer transition flex items-center justify-center gap-2 uppercase tracking-wider">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Upload MP3 Beats
+                    <input type="file" id="beat-upload-input" accept=".mp3,audio/mpeg" multiple onchange="handleSupabaseUpload(event)" aria-label="Choose MP3 beat files" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                </label>
+                <button onclick="ownerSignOut()" class="text-xs text-gray-400 hover:text-white border border-gray-800 rounded-lg px-3 py-2">Sign out</button>
+                <input id="owner-search-input" type="text" oninput="filterOwnerList(this.value)" placeholder="Search catalog items..." class="w-full sm:w-56 bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-green-500">
+            </div>
+            <div class="flex border-b border-gray-900 px-6 pt-3 gap-6 text-xs font-bold uppercase tracking-wider">
+                <button onclick="switchOwnerTab('active')" id="owner-tab-active" class="pb-3 border-b-2 border-green-500 text-white">Active Beats</button>
+                <button onclick="switchOwnerTab('trash')" id="owner-tab-trash" class="pb-3 border-b-2 border-transparent text-gray-400 hover:text-white">Hidden / Trash</button>
+            </div>
+            <div id="owner-items-list" class="flex-grow overflow-y-auto p-6 space-y-3 custom-scrollbar"></div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = "https://fwghhsdvzhmikgtshpce.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_WNS3xK7QeFDoHDrubfygig_fHKh9Rl_";
+const OWNER_USER_ID = "9c136ce2-1ec1-464c-80a5-7f4a79c0f805";
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+let allBeats = [];
+let currentTrack = null;
+let isPlaying = false;
+let currentPage = 1;
+const itemsPerPage = 20;
+let currentGenre = 'all';
+let searchQuery = '';
+let ownerAuthenticated = false;
+let ownerActiveTab = 'active';
+const audioPlayer = new Audio();
+
+const LICENSE_PRICES = { mp3:25, wav:50, unlimited:100 };
+const LICENSE_LABELS = { mp3:'MP3 Lease', wav:'WAV Trackout', unlimited:'Unlimited Exclusive' };
+let cartBeatIds = [];
+let choosingBeatId = null;
+
+function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, c => ({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[c]));
+}
+
+async function requireOwner() {
+    const { data:{ user }, error } = await supabaseClient.auth.getUser();
+    if (error || !user || user.id !== OWNER_USER_ID || !ownerAuthenticated) {
+        throw new Error('Please sign in with the authorized OUTTAMND owner account.');
+    }
+    return user;
+}
+
+async function loadBeats() {
+    const { data,error } = await supabaseClient.from('beats')
+        .select('*').eq('is_hidden',false).eq('is_exclusive_sold',false)
+        .order('created_at',{ascending:false});
+    if (error) throw error;
+    allBeats = (data || []).map(b => ({
+        ...b,
+        url:supabaseClient.storage.from('beats').getPublicUrl(b.audio_path).data.publicUrl
+    }));
+}
+
+async function initCatalog() {
+    const container = document.getElementById('beats-container');
+    try {
+        await loadBeats();
+        populateGenres();
+        renderBeats();
+    } catch(error) {
+        console.error('Could not load OUTTAMND catalog:',error);
+        container.innerHTML = '<div class="text-center py-16 text-red-400">Could not load beats. Please refresh the page.</div>';
+    }
+}
+
+function populateGenres() {
+    const genresSet = new Set();
+    allBeats.forEach(b => (b.tags || []).forEach(t => genresSet.add(t)));
+    const select = document.getElementById('genre-select');
+    select.innerHTML = '<option value="all">All Genres</option>';
+    Array.from(genresSet).sort().forEach(g => {
+        select.innerHTML += `<option value="${escapeHtml(g)}">${escapeHtml(g)}</option>`;
+    });
+}
+
+function renderBeats() {
+    const container = document.getElementById('beats-container');
+    const activeBeats = allBeats.filter(b => !b.is_hidden && !b.is_exclusive_sold);
+    const filtered = activeBeats.filter(b => {
+        const title = (b.title || '').toLowerCase();
+        const tags = b.tags || [];
+        const matchesSearch = title.includes(searchQuery.toLowerCase()) ||
+            tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase())) ||
+            String(b.bpm || '').toLowerCase().includes(searchQuery.toLowerCase());
+        return matchesSearch && (currentGenre === 'all' || tags.includes(currentGenre));
+    });
+
+    const totalPages = Math.ceil(filtered.length/itemsPerPage) || 1;
+    if (currentPage > totalPages) currentPage = 1;
+    const pageItems = filtered.slice((currentPage-1)*itemsPerPage,currentPage*itemsPerPage);
+
+    if (!pageItems.length) {
+        container.innerHTML = `<div class="text-center py-16 bg-gray-950/40 border border-gray-900 rounded-2xl">
+            <i class="fa-solid fa-compact-disc text-gray-700 text-3xl mb-3"></i>
+            <h3 class="text-white font-bold">No beats found</h3></div>`;
+        document.getElementById('pagination-container').innerHTML = '';
+        return;
+    }
+
+    container.innerHTML = pageItems.map(beat => `
+        <div class="glass-card p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 transition group">
+            <div class="flex items-center gap-3 sm:gap-4 min-w-0 w-full sm:flex-1">
+                <button type="button" data-play-beat="${escapeHtml(beat.id)}" aria-label="Play ${escapeHtml(beat.title)}"
+                    class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-green-500/10 group-hover:bg-green-500 text-green-400 group-hover:text-black border border-green-500/30 flex items-center justify-center shrink-0 shadow-lg transition">
+                    <i class="fa-solid fa-play text-xs ml-0.5"></i>
+                </button>
+                <div class="min-w-0 flex-1">
+                    <h3 class="font-extrabold font-syne text-white text-base sm:text-lg whitespace-normal break-words leading-tight uppercase tracking-wider group-hover:text-green-400 transition">${escapeHtml(beat.title)}</h3>
+                    <div class="flex items-center gap-2 mt-1 min-w-0">
+                        <span class="bg-green-950/60 border border-green-800/40 text-green-400 text-[10px] font-bold px-2 py-0.5 rounded-md uppercase shrink-0">${escapeHtml(beat.bpm)}</span>
+                        <p class="text-[11px] text-gray-400 font-medium min-w-0 truncate">${escapeHtml((beat.tags || []).join(' • '))}</p>
                     </div>
-                    <select id="genre-select" onchange="handleGenreFilter(this.value)" class="bg-black border border-gray-800 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-green-500 transition">
-                        <option value="all">All Genres</option>
-                    </select>
                 </div>
             </div>
-
-            <div id="beats-container" class="space-y-3"></div>
-            <div id="pagination-container" class="flex items-center justify-center gap-2 pt-4"></div>
-        </div>
-
-        <!-- DRUM KITS VIEW -->
-        <div id="view-kits" class="hidden space-y-6">
-            <h1 class="text-3xl font-extrabold font-syne text-white uppercase">Drum Kits & Soundsets</h1>
-            <p class="text-sm text-gray-400">Custom 808s, Roland XV-5080 presets, and Glo loops engineered directly by Outtamnd.</p>
-        </div>
-
-        <!-- LICENSING VIEW -->
-        <div id="view-licensing" class="hidden space-y-6">
-            <h1 class="text-3xl font-extrabold font-syne text-white uppercase">Licensing Breakdown</h1>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
-                <div class="glass-card p-6 rounded-2xl space-y-4">
-                    <h3 class="text-xl font-extrabold font-syne text-green-400 uppercase">MP3 Lease</h3>
-                    <p class="text-3xl font-black text-white">$25.00</p>
-                    <ul class="text-xs text-gray-400 space-y-2">
-                        <li><i class="fa-solid fa-check text-green-400 mr-2"></i> Untagged Audio File</li>
-                        <li><i class="fa-solid fa-check text-green-400 mr-2"></i> 100,000 Online Streams</li>
-                        <li><i class="fa-solid fa-check text-green-400 mr-2"></i> Instant Download</li>
-                    </ul>
-                </div>
-                <div class="glass-card p-6 rounded-2xl space-y-4 border-green-500/50 glow-green-sm">
-                    <h3 class="text-xl font-extrabold font-syne text-green-400 uppercase">WAV Trackout</h3>
-                    <p class="text-3xl font-black text-white">$50.00</p>
-                    <ul class="text-xs text-gray-400 space-y-2">
-                        <li><i class="fa-solid fa-check text-green-400 mr-2"></i> High Quality WAV Stems</li>
-                        <li><i class="fa-solid fa-check text-green-400 mr-2"></i> 500,000 Online Streams</li>
-                        <li><i class="fa-solid fa-check text-green-400 mr-2"></i> Full Performance Rights</li>
-                    </ul>
-                </div>
-                <div class="glass-card p-6 rounded-2xl space-y-4">
-                    <h3 class="text-xl font-extrabold font-syne text-green-400 uppercase">Unlimited Exclusive</h3>
-                    <p class="text-3xl font-black text-white">$100.00</p>
-                    <ul class="text-xs text-gray-400 space-y-2">
-                        <li><i class="fa-solid fa-check text-green-400 mr-2"></i> Unlimited commercial use & streams</li>
-                        <li><i class="fa-solid fa-check text-green-400 mr-2"></i> Full Stems + Trackout</li>
-                        <li><i class="fa-solid fa-check text-green-400 mr-2"></i> Exclusive license — one buyer only</li>
-                        <li><i class="fa-solid fa-check text-green-400 mr-2"></i> Producer retains copyright</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <!-- CONTACT VIEW -->
-        <div id="view-contact" class="hidden space-y-6 max-w-2xl">
-            <h1 class="text-3xl font-extrabold font-syne text-white uppercase">Direct Placement & Custom Beats</h1>
-            <p class="text-sm text-gray-400">Reach out for custom production, exclusive rights lock-in, or multi-beat placement packages.</p>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4">
-                <a href="https://instagram.com/outtamnd.mp3" target="_blank" class="glass-card p-5 rounded-2xl flex flex-col items-center text-center gap-3 group">
-                    <div class="w-12 h-12 rounded-xl bg-green-500/10 text-green-400 flex items-center justify-center text-xl group-hover:scale-110 transition"><i class="fa-brands fa-instagram"></i></div>
-                    <div>
-                        <h4 class="font-bold text-white text-xs uppercase tracking-wider">Instagram</h4>
-                        <p class="text-[11px] text-gray-400 mt-0.5">@outtamnd.mp3</p>
-                    </div>
-                </a>
-                <a href="https://x.com/0uttamnd" target="_blank" class="glass-card p-5 rounded-2xl flex flex-col items-center text-center gap-3 group">
-                    <div class="w-12 h-12 rounded-xl bg-green-500/10 text-green-400 flex items-center justify-center text-xl group-hover:scale-110 transition"><i class="fa-brands fa-x-twitter"></i></div>
-                    <div>
-                        <h4 class="font-bold text-white text-xs uppercase tracking-wider">X (Twitter)</h4>
-                        <p class="text-[11px] text-gray-400 mt-0.5">@0uttamnd</p>
-                    </div>
-                </a>
-                <a href="mailto:outtamnd@gmail.com" class="glass-card p-5 rounded-2xl flex flex-col items-center text-center gap-3 group">
-                    <div class="w-12 h-12 rounded-xl bg-green-500/10 text-green-400 flex items-center justify-center text-xl group-hover:scale-110 transition"><i class="fa-solid fa-envelope"></i></div>
-                    <div>
-                        <h4 class="font-bold text-white text-xs uppercase tracking-wider">Email</h4>
-                        <p class="text-[11px] text-gray-400 mt-0.5 truncate max-w-[140px]">outtamnd@gmail.com</p>
-                    </div>
-                </a>
-            </div>
-        </div>
-
-    </main>
-
-    <!-- STICKY BOTTOM AUDIO PLAYER -->
-    <div class="sticky bottom-0 z-50 bg-[#040604]/95 backdrop-blur-2xl border-t border-green-900/40 px-4 py-3 shadow-[0_-10px_30px_rgba(0,0,0,0.9)]">
-        <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-            
-            <div class="flex items-center gap-4 w-full md:w-1/3">
-                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-green-950 to-black border border-green-500/40 flex items-center justify-center text-green-400 shrink-0 glow-green-sm">
-                    <i id="player-icon" class="fa-solid fa-compact-disc text-xl animate-spin" style="animation-duration: 8s;"></i>
-                </div>
-                <div class="overflow-hidden min-w-0">
-                    <h4 id="player-title" class="text-sm font-extrabold text-white truncate font-syne uppercase">SELECT A BEAT TO PREVIEW</h4>
-                    <p id="player-subtitle" class="text-[11px] text-green-400 font-semibold truncate tracking-wider uppercase">0 BPM • READY FOR PLACEMENT</p>
-                </div>
-            </div>
-
-            <div class="flex flex-col items-center gap-1.5 w-full md:w-1/3">
-                <div class="flex items-center gap-6">
-                    <button onclick="playPrevTrack()" class="text-gray-400 hover:text-green-400 transition"><i class="fa-solid fa-backward-step"></i></button>
-                    <button onclick="togglePlayPause()" id="play-pause-btn" class="w-11 h-11 rounded-full bg-green-500 hover:bg-green-400 text-black flex items-center justify-center shadow-lg shadow-green-500/40 transition hover:scale-105">
-                        <i class="fa-solid fa-play text-xs ml-0.5"></i>
-                    </button>
-                    <button onclick="playNextTrack()" class="text-gray-400 hover:text-green-400 transition"><i class="fa-solid fa-forward-step"></i></button>
-                </div>
-                <div class="flex items-center gap-3 w-full text-[10px] text-gray-500 font-mono">
-                    <span id="current-time">0:00</span>
-                    <input type="range" id="seek-bar" value="0" min="0" max="100" oninput="handleSeek(this.value)" class="w-full h-1 bg-gray-900 rounded-lg appearance-none cursor-pointer accent-green-400">
-                    <span id="total-time">0:00</span>
-                </div>
-            </div>
-
-            <div class="flex items-center justify-end gap-4 w-full md:w-1/3">
-                <div class="hidden md:flex items-center gap-2">
-                    <i class="fa-solid fa-volume-high text-gray-500 text-xs"></i>
-                    <input type="range" min="0" max="1" step="0.05" value="0.8" oninput="handleVolume(this.value)" class="w-20 h-1 bg-gray-900 rounded-lg appearance-none cursor-pointer accent-green-400">
-                </div>
-                <button onclick="openLicenseModalFromPlayer()" class="bg-green-500 hover:bg-green-400 text-black font-extrabold text-xs uppercase tracking-wider px-6 py-2.5 rounded-xl shadow-lg shadow-green-500/30 transition hover:scale-105">
-                    Choose License
+            <div class="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto sm:shrink-0">
+                <span class="font-black text-white text-sm">From $25</span>
+                <button type="button" data-add-to-cart="${escapeHtml(beat.id)}"
+                    class="bg-green-500/10 hover:bg-green-500 border border-green-500/30 hover:border-green-500 text-green-400 hover:text-black font-extrabold text-xs uppercase tracking-wider px-4 sm:px-5 py-2.5 rounded-xl transition">
+                    <i class="fa-solid fa-cart-plus mr-1.5"></i> Add to Cart
                 </button>
             </div>
-        </div>
-    </div>
+        </div>`).join('');
+    renderPagination(totalPages);
+}
 
-    <!-- LICENSE CHOOSER MODAL -->
-    <div id="license-chooser-modal" class="fixed inset-0 z-[70] bg-black/90 backdrop-blur-md hidden items-center justify-center p-4">
-        <div class="bg-gray-950 border border-green-900/40 w-full max-w-md rounded-2xl overflow-hidden shadow-2xl">
-            <div class="p-5 border-b border-gray-900 flex items-center justify-between">
-                <div class="min-w-0"><h2 class="text-lg font-extrabold text-white uppercase">Choose a License</h2><p id="license-chooser-beat" class="text-xs text-gray-500 mt-1 truncate"></p></div>
-                <button onclick="closeLicenseChooser()" class="text-gray-400 hover:text-white text-xl" aria-label="Close license chooser"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="p-5 space-y-3">
-                <button onclick="chooseLicense('mp3')" class="w-full text-left p-4 rounded-xl border border-gray-800 hover:border-green-500 bg-black transition"><span class="flex justify-between items-center"><strong class="text-white">MP3 Lease</strong><strong class="text-green-400">$25</strong></span><span class="block text-xs text-gray-500 mt-1">Non-exclusive · MP3 file</span></button>
-                <button onclick="chooseLicense('wav')" class="w-full text-left p-4 rounded-xl border border-gray-800 hover:border-green-500 bg-black transition"><span class="flex justify-between items-center"><strong class="text-white">WAV Trackout</strong><strong class="text-green-400">$50</strong></span><span class="block text-xs text-gray-500 mt-1">Non-exclusive · WAV and trackout</span></button>
-                <button onclick="chooseLicense('unlimited')" class="w-full text-left p-4 rounded-xl border border-green-700/60 hover:border-green-400 bg-green-950/20 transition"><span class="flex justify-between items-center"><strong class="text-white">Unlimited Exclusive</strong><strong class="text-green-400">$100</strong></span><span class="block text-xs text-gray-400 mt-1">Exclusive license · one buyer · copyright remains with OUTTAMND</span></button>
-                <p class="text-[11px] text-gray-500 leading-relaxed">An exclusive purchase prevents future sales of this beat. Any earlier non-exclusive licenses remain valid.</p>
-            </div>
-        </div>
-    </div>
+document.getElementById('beats-container').addEventListener('click',event => {
+    const addButton = event.target.closest('[data-add-to-cart]');
+    if (addButton) {
+        event.preventDefault();
+        event.stopPropagation();
+        openLicenseChooser(addButton.dataset.addToCart);
+        return;
+    }
+    const playButton = event.target.closest('[data-play-beat]');
+    if (playButton) playBeat(playButton.dataset.playBeat);
+});
 
-    <!-- SHOPPING CART MODAL -->
-    <div id="cart-modal" class="fixed inset-0 z-[60] bg-black/90 backdrop-blur-md hidden items-center justify-center p-4">
-        <div class="bg-gray-950 border border-green-900/40 w-full max-w-xl rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[85vh]">
-            <div class="p-5 border-b border-gray-900 flex items-center justify-between">
-                <div>
-                    <h2 class="text-lg font-extrabold font-syne text-white uppercase">Your Cart</h2>
-                    <p class="text-xs text-gray-500 mt-1">Review your beats before checkout</p>
+function renderPagination(totalPages) {
+    const container = document.getElementById('pagination-container');
+    if (totalPages <= 1) { container.innerHTML=''; return; }
+    let html='';
+    for (let i=1;i<=totalPages;i++) {
+        html += `<button onclick="goToPage(${i})" class="w-8 h-8 rounded-xl font-bold text-xs transition ${currentPage===i?'bg-green-500 text-black shadow-lg shadow-green-500/50':'bg-gray-950 border border-gray-900 text-gray-400 hover:text-white'}">${i}</button>`;
+    }
+    container.innerHTML=html;
+}
+function goToPage(p) { currentPage=p; renderBeats(); window.scrollTo({top:0,behavior:'smooth'}); }
+function handleSearch(v) { searchQuery=v; currentPage=1; renderBeats(); }
+function handleGenreFilter(v) { currentGenre=v; currentPage=1; renderBeats(); }
+
+function playBeat(id) {
+    const beat=allBeats.find(b=>String(b.id)===String(id));
+    if (!beat) return;
+    if (currentTrack && currentTrack.id===beat.id) { togglePlayPause(); return; }
+    currentTrack=beat;
+    isPlaying=true;
+    document.getElementById('player-title').innerText=beat.title;
+    document.getElementById('player-subtitle').innerText=`${beat.bpm} • ${(beat.tags || []).join(', ')}`;
+    document.getElementById('play-pause-btn').innerHTML='<i class="fa-solid fa-pause text-xs"></i>';
+    audioPlayer.src=beat.url;
+    audioPlayer.play().catch(err=>{
+        console.log('Audio play error:',err);
+        alert('Playback error. Please ensure the file is a valid MP3.');
+    });
+}
+
+function togglePlayPause() {
+    if (!currentTrack) { if (allBeats.length) playBeat(allBeats[0].id); return; }
+    const btn=document.getElementById('play-pause-btn');
+    if (audioPlayer.paused) {
+        audioPlayer.play().catch(console.error);
+        isPlaying=true;
+        btn.innerHTML='<i class="fa-solid fa-pause text-xs"></i>';
+    } else {
+        audioPlayer.pause();
+        isPlaying=false;
+        btn.innerHTML='<i class="fa-solid fa-play text-xs ml-0.5"></i>';
+    }
+}
+function playNextTrack() {
+    if (!currentTrack) return;
+    const beats=allBeats.filter(b=>!b.is_hidden&&!b.is_exclusive_sold);
+    const idx=beats.findIndex(b=>b.id===currentTrack.id);
+    if (idx!==-1 && idx<beats.length-1) playBeat(beats[idx+1].id);
+    else if (beats.length) playBeat(beats[0].id);
+}
+function playPrevTrack() {
+    if (!currentTrack) return;
+    const beats=allBeats.filter(b=>!b.is_hidden&&!b.is_exclusive_sold);
+    const idx=beats.findIndex(b=>b.id===currentTrack.id);
+    if (idx>0) playBeat(beats[idx-1].id);
+    else if (beats.length) playBeat(beats[beats.length-1].id);
+}
+audioPlayer.addEventListener('timeupdate',()=>{
+    if (!audioPlayer.duration) return;
+    document.getElementById('current-time').innerText=formatTime(Math.floor(audioPlayer.currentTime));
+    document.getElementById('total-time').innerText=formatTime(Math.floor(audioPlayer.duration));
+    document.getElementById('seek-bar').value=(audioPlayer.currentTime/audioPlayer.duration)*100;
+});
+audioPlayer.addEventListener('ended',playNextTrack);
+function formatTime(s) { const m=Math.floor(s/60),sec=Math.floor(s%60); return `${m}:${sec<10?'0':''}${sec}`; }
+function handleSeek(v) { if (audioPlayer.duration) audioPlayer.currentTime=(v/100)*audioPlayer.duration; }
+function handleVolume(v) { audioPlayer.volume=v; }
+
+function switchTab(tab) {
+    ['beats','kits','licensing','contact'].forEach(t=>{
+        document.getElementById(`view-${t}`).classList.add('hidden');
+        const nav=document.getElementById(`nav-${t}`);
+        if (nav) { nav.classList.remove('text-white'); nav.classList.add('text-gray-400'); }
+    });
+    document.getElementById(`view-${tab}`).classList.remove('hidden');
+    const active=document.getElementById(`nav-${tab}`);
+    if (active) { active.classList.remove('text-gray-400'); active.classList.add('text-white'); }
+}
+
+async function openOwnerModal() {
+    document.getElementById('owner-modal').classList.remove('hidden');
+    const {data:{user}}=await supabaseClient.auth.getUser();
+    ownerAuthenticated=!!user&&user.id===OWNER_USER_ID;
+    if (ownerAuthenticated) {
+        document.getElementById('owner-auth-section').classList.add('hidden');
+        document.getElementById('owner-panel-content').classList.remove('hidden');
+        await loadOwnerBeats();
+        renderOwnerItems();
+    } else {
+        document.getElementById('owner-auth-section').classList.remove('hidden');
+        document.getElementById('owner-panel-content').classList.add('hidden');
+    }
+}
+function closeOwnerModal() { document.getElementById('owner-modal').classList.add('hidden'); }
+
+async function verifyOwnerPassword() {
+    const email=document.getElementById('owner-email-input').value.trim();
+    const password=document.getElementById('owner-pass-input').value;
+    const errorBox=document.getElementById('owner-auth-error');
+    errorBox.textContent='';
+    const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
+    if (error) { errorBox.textContent=error.message; return; }
+    if (!data.user || data.user.id!==OWNER_USER_ID) {
+        await supabaseClient.auth.signOut();
+        errorBox.textContent='This account is not authorized to manage OUTTAMND.';
+        return;
+    }
+    ownerAuthenticated=true;
+    document.getElementById('owner-auth-section').classList.add('hidden');
+    document.getElementById('owner-panel-content').classList.remove('hidden');
+    await loadOwnerBeats();
+    renderOwnerItems();
+    renderBeats();
+}
+async function ownerSignOut() {
+    await supabaseClient.auth.signOut();
+    ownerAuthenticated=false;
+    document.getElementById('owner-auth-section').classList.remove('hidden');
+    document.getElementById('owner-panel-content').classList.add('hidden');
+}
+async function loadOwnerBeats() {
+    const {data,error}=await supabaseClient.from('beats').select('*').order('created_at',{ascending:false});
+    if (error) { alert('Could not load owner catalog: '+error.message); return; }
+    allBeats=(data||[]).map(b=>({
+        ...b,
+        url:supabaseClient.storage.from('beats').getPublicUrl(b.audio_path).data.publicUrl
+    }));
+    populateGenres();
+    renderBeats();
+}
+
+function switchOwnerTab(tab) {
+    ownerActiveTab=tab;
+    const active=document.getElementById('owner-tab-active');
+    const trash=document.getElementById('owner-tab-trash');
+    if (tab==='active') {
+        active.className='pb-3 border-b-2 border-green-500 text-white';
+        trash.className='pb-3 border-b-2 border-transparent text-gray-400 hover:text-white';
+    } else {
+        trash.className='pb-3 border-b-2 border-green-500 text-white';
+        active.className='pb-3 border-b-2 border-transparent text-gray-400 hover:text-white';
+    }
+    const search=document.getElementById('owner-search-input').value;
+    renderOwnerItems(search);
+}
+
+/* OWNER CATALOG: includes WAV/ZIP upload controls for each beat. */
+function renderOwnerItems(query='') {
+    const list=document.getElementById('owner-items-list');
+    const items=allBeats.filter(b=>ownerActiveTab==='active'?!b.is_hidden:b.is_hidden);
+    const q=String(query||'').toLowerCase();
+    const filtered=items.filter(b=>(b.title||'').toLowerCase().includes(q));
+    if (!filtered.length) {
+        list.innerHTML='<p class="text-center text-gray-500 py-8 text-xs">No items found.</p>';
+        return;
+    }
+
+    list.innerHTML=filtered.map(b=>{
+        const sold=!!b.is_exclusive_sold;
+        const id=escapeHtml(b.id);
+        const wavStatus=b.wav_path
+            ? '<span class="text-green-400"><i class="fa-solid fa-check-circle mr-1"></i>WAV uploaded</span>'
+            : '<span class="text-gray-500">WAV not uploaded</span>';
+        const zipStatus=b.project_zip_path
+            ? '<span class="text-green-400"><i class="fa-solid fa-check-circle mr-1"></i>FL Studio ZIP uploaded</span>'
+            : '<span class="text-gray-500">FL Studio ZIP not uploaded</span>';
+
+        return `
+        <div class="bg-black border ${sold?'border-yellow-900/50':'border-gray-900'} p-4 rounded-xl space-y-3">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="min-w-0 flex-grow">
+                    <input type="text" value="${escapeHtml(b.title)}"
+                        ${sold?'disabled':''}
+                        onchange="renameBeat('${id}',this.value)"
+                        class="w-full bg-gray-950 border border-gray-800 rounded-lg px-2.5 py-2 text-xs text-white focus:outline-none focus:border-green-500 font-bold disabled:opacity-60 disabled:cursor-not-allowed">
+                    <p class="text-[10px] text-gray-500 truncate mt-1">${escapeHtml(b.bpm)} · ${escapeHtml((b.tags||[]).join(', '))}</p>
+                    ${sold?'<p class="text-[10px] text-yellow-400 font-bold uppercase mt-2"><i class="fa-solid fa-lock mr-1"></i> Exclusively sold — editing disabled</p>':''}
                 </div>
-                <button onclick="closeCart()" class="text-gray-400 hover:text-white text-xl" aria-label="Close cart"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div id="cart-items" class="p-5 space-y-3 overflow-y-auto flex-grow">
-                <p class="text-center text-gray-500 py-8 text-sm">Your cart is empty.</p>
-            </div>
-            <div class="p-5 border-t border-gray-900 space-y-3">
-                <div class="flex items-center justify-between text-sm"><span class="text-gray-400">Estimated total</span><strong id="cart-total" class="text-white">$0.00</strong></div>
-                <button id="cart-checkout-button" onclick="checkoutCart()" class="w-full bg-green-500 hover:bg-green-400 text-black font-extrabold text-xs uppercase tracking-wider py-3 rounded-xl transition disabled:opacity-40 disabled:cursor-not-allowed" disabled>Checkout</button>
-                <button onclick="clearCart()" class="w-full text-xs text-gray-500 hover:text-red-400 transition">Clear cart</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- OWNER MODERATION MODAL -->
-    <div id="owner-modal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md hidden flex items-center justify-center p-4">
-        <div class="bg-gray-950 border border-green-900/40 w-full max-w-2xl rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[85vh]">
-            <div class="p-5 border-b border-gray-900 flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <div class="w-3 h-3 rounded-full bg-green-500 animate-pulse"></div>
-                    <h3 class="font-extrabold font-syne text-white text-lg uppercase tracking-wider">OUTTAMND Owner Catalog</h3>
-                </div>
-                <div class="flex items-center gap-3">
-                    <button onclick="closeOwnerModal()" class="text-gray-400 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
+                <div class="flex items-center gap-2 shrink-0">
+                    ${ownerActiveTab==='active'
+                        ? (sold
+                            ? '<span class="text-[10px] text-yellow-400 border border-yellow-900/50 px-3 py-2 rounded-lg">SOLD</span>'
+                            : `<button onclick="hideBeat('${id}')" class="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 text-xs px-3 py-1.5 rounded-lg transition">Hide</button>`)
+                        : (sold
+                            ? '<span class="text-[10px] text-yellow-400 border border-yellow-900/50 px-3 py-2 rounded-lg">SOLD</span>'
+                            : `<button onclick="restoreBeat('${id}')" class="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 text-xs px-3 py-1.5 rounded-lg transition">Restore</button>`)}
                 </div>
             </div>
-            
-            <div id="owner-auth-section" class="p-8 space-y-4">
-                <p class="text-xs text-gray-400">Sign in with your OUTTAMND owner account.</p>
-                <input type="email" id="owner-email-input" autocomplete="username" placeholder="Owner email" class="w-full bg-black border border-gray-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-green-500">
-                <div class="flex gap-3">
-                    <input type="password" id="owner-pass-input" autocomplete="current-password" placeholder="Password" class="flex-grow bg-black border border-gray-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-green-500" onkeydown="if(event.key==='Enter') verifyOwnerPassword()">
-                    <button onclick="verifyOwnerPassword()" class="bg-green-500 hover:bg-green-400 text-black text-xs font-bold px-6 py-2 rounded-xl transition uppercase">Sign in</button>
+
+            <div class="border-t border-gray-900 pt-3 space-y-3">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div class="text-[10px]">${wavStatus}</div>
+                    ${!sold?`
+                    <label class="relative overflow-hidden inline-flex items-center justify-center gap-2 bg-green-500/10 hover:bg-green-500/20 border border-green-500/30 text-green-400 text-[10px] font-bold uppercase tracking-wider px-3 py-2 rounded-lg cursor-pointer transition">
+                        <i class="fa-solid fa-file-audio"></i> ${b.wav_path?'Replace WAV':'Upload WAV'}
+                        <input type="file" accept=".wav,audio/wav,audio/x-wav" onchange="uploadBeatDeliverable(event,'${id}','wav_path')" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                    </label>`:'<span class="text-[10px] text-gray-600">Uploads disabled for sold beat</span>'}
                 </div>
-                <p id="owner-auth-error" class="text-xs text-red-400"></p>
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div class="text-[10px]">${zipStatus}</div>
+                    ${!sold?`
+                    <label class="relative overflow-hidden inline-flex items-center justify-center gap-2 bg-green-500/10 hover:bg-green-500/20 border border-green-500/30 text-green-400 text-[10px] font-bold uppercase tracking-wider px-3 py-2 rounded-lg cursor-pointer transition">
+                        <i class="fa-solid fa-file-zipper"></i> ${b.project_zip_path?'Replace FL Studio ZIP':'Upload FL Studio ZIP'}
+                        <input type="file" accept=".zip,application/zip,application/x-zip-compressed" onchange="uploadBeatDeliverable(event,'${id}','project_zip_path')" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                    </label>`:''}
+                </div>
             </div>
+        </div>`;
+    }).join('');
+}
 
-            <div id="owner-panel-content" class="hidden flex-grow flex flex-col overflow-hidden">
-                <div class="p-4 bg-black border-b border-gray-900 flex flex-col sm:flex-row items-center justify-between gap-3">
-                    <!-- Upload audio files to Supabase Storage -->
-                    <label class="relative overflow-hidden w-full sm:w-auto bg-green-500 hover:bg-green-400 text-black text-xs font-bold px-4 py-2.5 rounded-xl cursor-pointer transition flex items-center justify-center gap-2 uppercase tracking-wider">
-                        <i class="fa-solid fa-cloud-arrow-up"></i> Upload Audio Files
-                        <input type="file" id="beat-upload-input" accept="audio/*,.mp3,.wav,.m4a,.aac,.aiff,.flac,.ogg" multiple onchange="handleSupabaseUpload(event)" aria-label="Choose audio files from Files" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
-                    </label>
-                    <button onclick="ownerSignOut()" class="text-xs text-gray-400 hover:text-white border border-gray-800 rounded-lg px-3 py-2">Sign out</button>
-                    <input type="text" oninput="filterOwnerList(this.value)" placeholder="Search catalog items..." class="w-full sm:w-56 bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-green-500">
-                </div>
+function filterOwnerList(q) { renderOwnerItems(q); }
 
-                <div class="flex border-b border-gray-900 px-6 pt-3 gap-6 text-xs font-bold uppercase tracking-wider">
-                    <button onclick="switchOwnerTab('active')" id="owner-tab-active" class="pb-3 border-b-2 border-green-500 text-white">Active Beats</button>
-                    <button onclick="switchOwnerTab('trash')" id="owner-tab-trash" class="pb-3 border-b-2 border-transparent text-gray-400 hover:text-white">Hidden / Trash</button>
-                </div>
-                <div id="owner-items-list" class="flex-grow overflow-y-auto p-6 space-y-2 custom-scrollbar"></div>
-            </div>
-        </div>
-    </div>
+/* Uploads one optional deliverable to the existing "beats" bucket. */
+async function uploadBeatDeliverable(event,beatId,column) {
+    const input=event.target;
+    const file=input.files && input.files[0];
+    if (!file) return;
 
-    <!-- Supabase client -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    try {
+        await requireOwner();
 
-    <!-- JAVASCRIPT LOGIC -->
-    <script>
-        const SUPABASE_URL = "https://fwghhsdvzhmikgtshpce.supabase.co";
-        const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_WNS3xK7QeFDoHDrubfygig_fHKh9Rl_";
-        const OWNER_USER_ID = "9c136ce2-1ec1-464c-80a5-7f4a79c0f805";
-        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
-
-        let allBeats = [];
-        let hiddenBeatIds = [];
-        let currentTrack = null;
-        let isPlaying = false;
-        let currentPage = 1;
-        const itemsPerPage = 20;
-        let currentGenre = 'all';
-        let searchQuery = '';
-        let ownerAuthenticated = false;
-        let ownerActiveTab = 'active';
-
-        const audioPlayer = new Audio();
-
-        async function loadBeats() {
-            const { data, error } = await supabaseClient
-                .from('beats').select('*').eq('is_hidden', false).eq('is_exclusive_sold', false).order('created_at', { ascending: false });
-            if (error) throw error;
-            allBeats = (data || []).map(b => ({
-                ...b,
-                url: supabaseClient.storage.from('beats').getPublicUrl(b.audio_path).data.publicUrl
-            }));
+        if (!['wav_path','project_zip_path'].includes(column)) {
+            throw new Error('Invalid upload type.');
         }
 
-        async function initCatalog() {
-            const container = document.getElementById('beats-container');
-            try {
-                await loadBeats();
-                populateGenres();
-                renderBeats();
-            } catch (error) {
-                console.error('Could not load OUTTAMND catalog:', error);
-                container.innerHTML = `<div class="text-center py-16 text-red-400">Could not load beats. Please refresh the page.</div>`;
-            }
+        const isWav=column==='wav_path';
+        const extension=(file.name.split('.').pop()||'').toLowerCase();
+
+        if (isWav && (extension!=='wav' || (file.type && !['audio/wav','audio/x-wav','audio/wave',''].includes(file.type)))) {
+            throw new Error('Please choose a WAV audio file (.wav).');
+        }
+        if (!isWav && (extension!=='zip' || (file.type && !['application/zip','application/x-zip-compressed','application/octet-stream',''].includes(file.type)))) {
+            throw new Error('Please choose a ZIP file (.zip).');
         }
 
-        function populateGenres() {
-            const genresSet = new Set();
-            allBeats.forEach(b => b.tags.forEach(t => genresSet.add(t)));
-            const select = document.getElementById('genre-select');
-            select.innerHTML = '<option value="all">All Genres</option>';
-            Array.from(genresSet).sort().forEach(g => {
-                select.innerHTML += `<option value="${escapeHtml(g)}">${escapeHtml(g)}</option>`;
-            });
-        }
+        const beat=allBeats.find(b=>String(b.id)===String(beatId));
+        if (!beat) throw new Error('Beat not found. Refresh the owner catalog.');
+        if (beat.is_exclusive_sold) throw new Error('This beat has already been exclusively sold. Its files cannot be changed.');
 
-        function renderBeats() {
-            const container = document.getElementById('beats-container');
-            const activeBeats = allBeats.filter(b => !b.is_hidden && !b.is_exclusive_sold);
-            
-            const filtered = activeBeats.filter(b => {
-                const matchesSearch = b.title.toLowerCase().includes(searchQuery.toLowerCase()) || b.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase()));
-                const matchesGenre = currentGenre === 'all' || b.tags.includes(currentGenre);
-                return matchesSearch && matchesGenre;
-            });
+        if (file.size===0) throw new Error('The selected file is empty.');
+        if (file.size > 500*1024*1024) throw new Error('Files must be 500 MB or smaller.');
 
-            const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
-            if (currentPage > totalPages) currentPage = 1;
+        input.disabled=true;
+        const safeName=file.name.normalize('NFKD').replace(/[^a-zA-Z0-9._-]+/g,'-');
+        const path=`deliverables/${beatId}/${crypto.randomUUID()}-${safeName}`;
+        const contentType=isWav?'audio/wav':'application/zip';
 
-            const start = (currentPage - 1) * itemsPerPage;
-            const pageItems = filtered.slice(start, start + itemsPerPage);
-
-            if (pageItems.length === 0) {
-                container.innerHTML = `
-                    <div class="text-center py-16 bg-gray-950/40 border border-gray-900 rounded-2xl">
-                        <i class="fa-solid fa-compact-disc text-gray-700 text-3xl mb-3"></i>
-                        <h3 class="text-white font-bold">No beats found</h3>
-                    </div>`;
-                document.getElementById('pagination-container').innerHTML = '';
-                return;
-            }
-
-            container.innerHTML = pageItems.map(beat => `
-                <div class="glass-card p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 transition group">
-                    <div class="flex items-center gap-3 sm:gap-4 min-w-0 w-full sm:flex-1">
-                        <button type="button" data-play-beat="${escapeHtml(beat.id)}" aria-label="Play ${escapeHtml(beat.title)}" class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-green-500/10 group-hover:bg-green-500 text-green-400 group-hover:text-black border border-green-500/30 flex items-center justify-center shrink-0 shadow-lg transition">
-                            <i class="fa-solid fa-play text-xs ml-0.5"></i>
-                        </button>
-                        <div class="min-w-0 flex-1">
-                            <h3 class="font-extrabold font-syne text-white text-base sm:text-lg whitespace-normal break-words leading-tight uppercase tracking-wider group-hover:text-green-400 transition">${escapeHtml(beat.title)}</h3>
-                            <div class="flex items-center gap-2 mt-1 min-w-0">
-                                <span class="bg-green-950/60 border border-green-800/40 text-green-400 text-[10px] font-bold px-2 py-0.5 rounded-md uppercase shrink-0">${escapeHtml(beat.bpm)}</span>
-                                <p class="text-[11px] text-gray-400 font-medium min-w-0 truncate">${escapeHtml(beat.tags.join(' • '))}</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto sm:shrink-0">
-                        <span class="font-black text-white text-sm">From $25</span>
-                        <button type="button" data-add-to-cart="${escapeHtml(beat.id)}" class="bg-green-500/10 hover:bg-green-500 border border-green-500/30 hover:border-green-500 text-green-400 hover:text-black font-extrabold text-xs uppercase tracking-wider px-4 sm:px-5 py-2.5 rounded-xl transition">
-                            <i class="fa-solid fa-cart-plus mr-1.5"></i> Add to Cart
-                        </button>
-                    </div>
-                </div>
-            `).join('');
-
-            renderPagination(totalPages);
-        }
-
-        // Delegated clicks keep both controls working after the catalog is re-rendered.
-        document.getElementById('beats-container').addEventListener('click', (event) => {
-            const addButton = event.target.closest('[data-add-to-cart]');
-            if (addButton) {
-                event.preventDefault();
-                event.stopPropagation();
-                openLicenseChooser(addButton.dataset.addToCart);
-                return;
-            }
-            const playButton = event.target.closest('[data-play-beat]');
-            if (playButton) playBeat(playButton.dataset.playBeat);
+        const {error:uploadError}=await supabaseClient.storage.from('beats').upload(path,file,{
+            cacheControl:'3600',
+            upsert:false,
+            contentType
         });
+        if (uploadError) throw uploadError;
 
-        function renderPagination(totalPages) {
-            const container = document.getElementById('pagination-container');
-            if (totalPages <= 1) { container.innerHTML = ''; return; }
-            let html = '';
-            for (let i = 1; i <= totalPages; i++) {
-                html += `<button onclick="goToPage(${i})" class="w-8 h-8 rounded-xl font-bold text-xs transition ${currentPage === i ? 'bg-green-500 text-black shadow-lg shadow-green-500/50' : 'bg-gray-950 border border-gray-900 text-gray-400 hover:text-white'}">${i}</button>`;
-            }
-            container.innerHTML = html;
+        const updateData={};
+        updateData[column]=path;
+
+        const {error:updateError}=await supabaseClient.from('beats')
+            .update(updateData)
+            .eq('id',beatId)
+            .eq('is_exclusive_sold',false);
+
+        if (updateError) {
+            await supabaseClient.storage.from('beats').remove([path]);
+            throw updateError;
         }
 
-        function goToPage(p) { currentPage = p; renderBeats(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
-        function handleSearch(val) { searchQuery = val; currentPage = 1; renderBeats(); }
-        function handleGenreFilter(val) { currentGenre = val; currentPage = 1; renderBeats(); }
-
-        function playBeat(id) {
-            const beat = allBeats.find(b => b.id === id);
-            if (!beat) return;
-            
-            if (currentTrack && currentTrack.id === beat.id) {
-                togglePlayPause();
-                return;
-            }
-
-            currentTrack = beat;
-            isPlaying = true;
-
-            document.getElementById('player-title').innerText = beat.title;
-            document.getElementById('player-subtitle').innerText = `${beat.bpm} • ${beat.tags.join(', ')}`;
-            document.getElementById('play-pause-btn').innerHTML = '<i class="fa-solid fa-pause text-xs"></i>';
-            
-            audioPlayer.src = beat.url;
-            audioPlayer.play().catch(err => {
-                console.log("Audio play error:", err);
-                alert("Playback error. Please ensure the file is a valid MP3.");
-            });
+        // Remove the previous version only after the new path was saved successfully.
+        const oldPath=beat[column];
+        if (oldPath && oldPath!==path) {
+            const {error:removeError}=await supabaseClient.storage.from('beats').remove([oldPath]);
+            if (removeError) console.warn('New file saved, but old file cleanup failed:',removeError);
         }
 
-        function togglePlayPause() {
-            if (!currentTrack) { if (allBeats.length > 0) playBeat(allBeats[0].id); return; }
-            
-            const btn = document.getElementById('play-pause-btn');
-            if (audioPlayer.paused) {
-                audioPlayer.play();
-                isPlaying = true;
-                btn.innerHTML = '<i class="fa-solid fa-pause text-xs"></i>';
-            } else {
-                audioPlayer.pause();
-                isPlaying = false;
-                btn.innerHTML = '<i class="fa-solid fa-play text-xs ml-0.5"></i>';
-            }
-        }
+        await loadOwnerBeats();
+        renderOwnerItems(document.getElementById('owner-search-input').value);
+        alert(isWav?'WAV file uploaded successfully.':'FL Studio ZIP uploaded successfully.');
+    } catch(error) {
+        console.error('Deliverable upload error:',error);
+        alert('Upload failed: '+(error.message||String(error)));
+    } finally {
+        input.disabled=false;
+        input.value='';
+    }
+}
 
-        function playNextTrack() {
-            if (!currentTrack) return;
-            const activeBeats = allBeats.filter(b => !b.is_hidden && !b.is_exclusive_sold);
-            const idx = activeBeats.findIndex(b => b.id === currentTrack.id);
-            if (idx !== -1 && idx < activeBeats.length - 1) playBeat(activeBeats[idx + 1].id);
-            else if (activeBeats.length > 0) playBeat(activeBeats[0].id);
-        }
+async function renameBeat(id,newTitle) {
+    try {
+        await requireOwner();
+        const beat=allBeats.find(b=>String(b.id)===String(id));
+        if (!beat || beat.is_exclusive_sold) throw new Error('This beat cannot be edited.');
+        const title=newTitle.trim();
+        if (!title) throw new Error('Beat title cannot be empty.');
+        const {error}=await supabaseClient.from('beats').update({title})
+            .eq('id',id).eq('is_exclusive_sold',false);
+        if (error) throw error;
+        await loadOwnerBeats();
+        renderOwnerItems(document.getElementById('owner-search-input').value);
+    } catch(error) {
+        alert('Rename failed: '+error.message);
+        await loadOwnerBeats();
+        renderOwnerItems(document.getElementById('owner-search-input').value);
+    }
+}
 
-        function playPrevTrack() {
-            if (!currentTrack) return;
-            const activeBeats = allBeats.filter(b => !b.is_hidden && !b.is_exclusive_sold);
-            const idx = activeBeats.findIndex(b => b.id === currentTrack.id);
-            if (idx > 0) playBeat(activeBeats[idx - 1].id);
-            else if (activeBeats.length > 0) playBeat(activeBeats[activeBeats.length - 1].id);
-        }
+function parseBeatFilename(filename) {
+    let base=filename.replace(/\.[^/.]+$/,'').trim();
+    const bpmMatch=base.match(/\b(\d{2,3})\s*$/);
+    const bpm=bpmMatch?`${bpmMatch[1]} BPM`:'140 BPM';
+    if (bpmMatch) base=base.slice(0,bpmMatch.index).trim();
+    const genreMatch=base.match(/^\(([^)]+)\)/);
+    const tags=genreMatch?genreMatch[1].split(',').map(x=>x.trim().toUpperCase()).filter(Boolean):['TRAP'];
+    if (genreMatch) base=base.slice(genreMatch[0].length).trim();
+    if (base.includes(' - ')) base=base.split(' - ').slice(-1)[0].trim();
+    base=base.replace(/\s+/g,' ').replace(/^[-+_ ]+|[-+_ ]+$/g,'').trim();
+    return {title:base||filename.replace(/\.[^/.]+$/,''),bpm,tags};
+}
 
-        audioPlayer.addEventListener('timeupdate', () => {
-            if (!audioPlayer.duration) return;
-            const curSec = Math.floor(audioPlayer.currentTime);
-            const durSec = Math.floor(audioPlayer.duration);
-            
-            document.getElementById('current-time').innerText = formatTime(curSec);
-            document.getElementById('total-time').innerText = formatTime(durSec);
-            document.getElementById('seek-bar').value = (audioPlayer.currentTime / audioPlayer.duration) * 100;
-        });
+/* New beat uploads are MP3 only. WAV files belong in the per-beat WAV upload control. */
+async function handleSupabaseUpload(event) {
+    const files=Array.from(event.target.files||[]);
+    if (!files.length) return;
+    const input=event.target;
+    input.disabled=true;
+    let uploaded=0;
+    const failures=[];
 
-        audioPlayer.addEventListener('ended', () => {
-            playNextTrack();
-        });
-
-        function formatTime(seconds) {
-            const mins = Math.floor(seconds / 60);
-            const secs = Math.floor(seconds % 60);
-            return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-        }
-
-        function handleSeek(val) {
-            if (audioPlayer.duration) {
-                audioPlayer.currentTime = (val / 100) * audioPlayer.duration;
-            }
-        }
-
-        function handleVolume(val) {
-            audioPlayer.volume = val;
-        }
-
-        function switchTab(tab) {
-            ['beats', 'kits', 'licensing', 'contact'].forEach(t => {
-                document.getElementById(`view-${t}`).classList.add('hidden');
-                const nav = document.getElementById(`nav-${t}`);
-                if (nav) { nav.classList.remove('text-white'); nav.classList.add('text-gray-400'); }
-            });
-            document.getElementById(`view-${tab}`).classList.remove('hidden');
-            const activeNav = document.getElementById(`nav-${tab}`);
-            if (activeNav) { activeNav.classList.remove('text-gray-400'); activeNav.classList.add('text-white'); }
-        }
-
-        async function openOwnerModal() {
-            document.getElementById('owner-modal').classList.remove('hidden');
-            const { data: { user } } = await supabaseClient.auth.getUser();
-            ownerAuthenticated = !!user && user.id === OWNER_USER_ID;
-            if (ownerAuthenticated) {
-                document.getElementById('owner-auth-section').classList.add('hidden');
-                document.getElementById('owner-panel-content').classList.remove('hidden');
-                await loadOwnerBeats();
-                renderOwnerItems();
-            } else {
-                document.getElementById('owner-auth-section').classList.remove('hidden');
-                document.getElementById('owner-panel-content').classList.add('hidden');
-            }
-        }
-
-        function closeOwnerModal() { document.getElementById('owner-modal').classList.add('hidden'); }
-
-        async function verifyOwnerPassword() {
-            const email = document.getElementById('owner-email-input').value.trim();
-            const password = document.getElementById('owner-pass-input').value;
-            const errorBox = document.getElementById('owner-auth-error');
-            errorBox.textContent = '';
-            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-            if (error) { errorBox.textContent = error.message; return; }
-            if (!data.user || data.user.id !== OWNER_USER_ID) {
-                await supabaseClient.auth.signOut();
-                errorBox.textContent = 'This account is not authorized to manage OUTTAMND.';
-                return;
-            }
-            ownerAuthenticated = true;
-            document.getElementById('owner-auth-section').classList.add('hidden');
-            document.getElementById('owner-panel-content').classList.remove('hidden');
-            await loadOwnerBeats();
-            renderOwnerItems();
-            renderBeats();
-        }
-
-        async function ownerSignOut() {
-            await supabaseClient.auth.signOut();
-            ownerAuthenticated = false;
-            document.getElementById('owner-auth-section').classList.remove('hidden');
-            document.getElementById('owner-panel-content').classList.add('hidden');
-        }
-
-        async function loadOwnerBeats() {
-            const { data, error } = await supabaseClient.from('beats').select('*').order('created_at', { ascending: false });
-            if (error) { alert('Could not load owner catalog: ' + error.message); return; }
-            allBeats = (data || []).map(b => ({
-                ...b, url: supabaseClient.storage.from('beats').getPublicUrl(b.audio_path).data.publicUrl
-            }));
-            hiddenBeatIds = allBeats.filter(b => b.is_hidden).map(b => b.id);
-            populateGenres();
-            renderBeats();
-        }
-
-        function switchOwnerTab(tab) {
-            ownerActiveTab = tab;
-            const btnActive = document.getElementById('owner-tab-active');
-            const btnTrash = document.getElementById('owner-tab-trash');
-            if (tab === 'active') {
-                btnActive.className = "pb-3 border-b-2 border-green-500 text-white";
-                btnTrash.className = "pb-3 border-b-2 border-transparent text-gray-400 hover:text-white";
-            } else {
-                btnTrash.className = "pb-3 border-b-2 border-green-500 text-white";
-                btnActive.className = "pb-3 border-b-2 border-transparent text-gray-400 hover:text-white";
-            }
-            renderOwnerItems();
-        }
-
-        function escapeHtml(value) {
-            return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-        }
-
-        function renderOwnerItems(query = '') {
-            const list = document.getElementById('owner-items-list');
-            const items = allBeats.filter(b => ownerActiveTab === 'active' ? !b.is_hidden : b.is_hidden);
-            const q = query.toLowerCase();
-            const filtered = items.filter(b => b.title.toLowerCase().includes(q));
-            if (filtered.length === 0) { list.innerHTML = `<p class="text-center text-gray-500 py-8 text-xs">No items found.</p>`; return; }
-            list.innerHTML = filtered.map(b => `
-                <div class="bg-black border border-gray-900 p-3 rounded-xl flex items-center justify-between gap-3">
-                    <div class="min-w-0 flex-grow">
-                        <input type="text" value="${escapeHtml(b.title)}" onchange="renameBeat('${b.id}', this.value)" class="w-full bg-gray-950 border border-gray-800 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none focus:border-green-500 font-bold">
-                        <p class="text-[10px] text-gray-500 truncate mt-1">${escapeHtml(b.bpm)} · ${escapeHtml((b.tags || []).join(', '))}</p>
-                    </div>
-                    <div class="flex items-center gap-2 shrink-0">
-                        ${ownerActiveTab === 'active' ? `<button onclick="hideBeat('${b.id}')" class="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 text-xs px-3 py-1.5 rounded-lg transition">Hide</button>` : `<button onclick="restoreBeat('${b.id}')" class="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 text-xs px-3 py-1.5 rounded-lg transition">Restore</button>`}
-                    </div>
-                </div>`).join('');
-        }
-
-        function filterOwnerList(q) { renderOwnerItems(q); }
-
-        async function renameBeat(id, newTitle) {
-            const title = newTitle.trim();
-            if (!title) { alert('Beat title cannot be empty.'); await loadOwnerBeats(); renderOwnerItems(); return; }
-            const { error } = await supabaseClient.from('beats').update({ title }).eq('id', id);
-            if (error) { alert('Rename failed: ' + error.message); return; }
-            await loadOwnerBeats();
-            renderOwnerItems();
-        }
-
-        function parseBeatFilename(filename) {
-            let base = filename.replace(/\.[^/.]+$/, '').trim();
-            const bpmMatch = base.match(/\b(\d{2,3})\s*$/);
-            const bpm = bpmMatch ? `${bpmMatch[1]} BPM` : '140 BPM';
-            if (bpmMatch) base = base.slice(0, bpmMatch.index).trim();
-            const genreMatch = base.match(/^\(([^)]+)\)/);
-            const tags = genreMatch ? genreMatch[1].split(',').map(x => x.trim().toUpperCase()).filter(Boolean) : ['TRAP'];
-            if (genreMatch) base = base.slice(genreMatch[0].length).trim();
-            if (base.includes(' - ')) base = base.split(' - ').slice(-1)[0].trim();
-            base = base.replace(/\s+/g, ' ').replace(/^[-+_ ]+|[-+_ ]+$/g, '').trim();
-            return { title: base || filename.replace(/\.[^/.]+$/, ''), bpm, tags };
-        }
-
-        async function handleSupabaseUpload(event) {
-            const files = Array.from(event.target.files || []);
-            if (!files.length) return;
-            const input = event.target;
-            input.disabled = true;
-            let uploaded = 0;
-            const failures = [];
-            for (const file of files) {
-                try {
-                    const safeName = file.name.normalize('NFKD').replace(/[^a-zA-Z0-9._-]+/g, '-');
-                    const path = `audio/${crypto.randomUUID()}-${safeName}`;
-                    const { error: storageError } = await supabaseClient.storage.from('beats').upload(path, file, {
-                        cacheControl: '3600', upsert: false, contentType: file.type || 'audio/mpeg'
-                    });
-                    if (storageError) throw storageError;
-                    const meta = parseBeatFilename(file.name);
-                    const { error: rowError } = await supabaseClient.from('beats').insert({
-                        title: meta.title, bpm: meta.bpm, tags: meta.tags, audio_path: path, price: 25, is_hidden: false
-                    });
-                    if (rowError) {
-                        await supabaseClient.storage.from('beats').remove([path]);
-                        throw rowError;
-                    }
-                    uploaded++;
-                } catch (err) {
-                    failures.push(`${file.name}: ${err.message || err}`);
-                }
-            }
-            input.disabled = false;
-            input.value = '';
-            await loadOwnerBeats();
-            renderOwnerItems();
-            if (failures.length) alert(`Uploaded ${uploaded} of ${files.length} files.\n\nFailed:\n${failures.slice(0, 8).join('\n')}${failures.length > 8 ? `\n…and ${failures.length - 8} more.` : ''}`);
-            else alert(`Successfully uploaded ${uploaded} beat file(s) to OUTTAMND.`);
-        }
-
-        async function hideBeat(id) {
-            const { error } = await supabaseClient.from('beats').update({ is_hidden: true }).eq('id', id);
-            if (error) { alert('Could not hide beat: ' + error.message); return; }
-            await loadOwnerBeats(); renderOwnerItems();
-        }
-
-        async function restoreBeat(id) {
-            const { error } = await supabaseClient.from('beats').update({ is_hidden: false }).eq('id', id);
-            if (error) { alert('Could not restore beat: ' + error.message); return; }
-            await loadOwnerBeats(); renderOwnerItems();
-        }
-
-        window.addEventListener('keydown', (e) => {
-            if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'a') { e.preventDefault(); openOwnerModal(); }
-        });
-
-        // Restore cart entries. Older saved carts containing only beat IDs are migrated to MP3 Lease.
-        const LICENSE_PRICES = { mp3: 25, wav: 50, unlimited: 100 };
-        const LICENSE_LABELS = { mp3: 'MP3 Lease', wav: 'WAV Trackout', unlimited: 'Unlimited Exclusive' };
-        let cartBeatIds = [];
-        let choosingBeatId = null;
+    for (const file of files) {
         try {
-            const savedCart = JSON.parse(localStorage.getItem('outtamnd_cart') || '[]');
-            cartBeatIds = Array.isArray(savedCart) ? savedCart.map(item => {
-                if (typeof item === 'string') return { beatId: item, licenseType: 'mp3' };
-                if (item && (item.beatId || item.id)) return { beatId: item.beatId || item.id, licenseType: LICENSE_PRICES[item.licenseType] ? item.licenseType : 'mp3' };
-                return null;
-            }).filter(Boolean) : [];
-        } catch (error) {
-            cartBeatIds = [];
-            localStorage.removeItem('outtamnd_cart');
-        }
-
-        function saveCart() {
-            try { localStorage.setItem('outtamnd_cart', JSON.stringify(cartBeatIds)); }
-            catch (error) { console.warn('Could not save cart in this browser:', error); }
-        }
-
-        function updateCartCount() {
-            const count = document.getElementById('cart-count');
-            if (count) count.innerText = cartBeatIds.length;
-        }
-
-        function openLicenseChooser(id) {
-            const beat = allBeats.find(b => String(b.id) === String(id));
-            if (!beat) { alert('That beat is not loaded yet. Refresh the page and try again.'); return; }
-            choosingBeatId = beat.id;
-            document.getElementById('license-chooser-beat').innerText = beat.title;
-            const modal = document.getElementById('license-chooser-modal');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        }
-
-        function closeLicenseChooser() {
-            const modal = document.getElementById('license-chooser-modal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-            choosingBeatId = null;
-        }
-
-        function chooseLicense(licenseType) {
-            if (!choosingBeatId || !LICENSE_PRICES[licenseType]) return;
-            addToCart(choosingBeatId, licenseType);
-            closeLicenseChooser();
-            renderCart();
-        }
-
-        function addToCart(id, licenseType = 'mp3') {
-            const beat = allBeats.find(b => String(b.id) === String(id));
-            if (!beat) { alert('That beat is not loaded yet. Refresh the page and try again.'); return; }
-            const existing = cartBeatIds.find(item => String(item.beatId) === String(beat.id));
-            if (existing) {
-                existing.licenseType = licenseType;
-                alert(`${beat.title} is already in your cart. Its license has been changed to ${LICENSE_LABELS[licenseType]}.`);
-            } else {
-                cartBeatIds.push({ beatId: beat.id, licenseType });
+            await requireOwner();
+            const extension=(file.name.split('.').pop()||'').toLowerCase();
+            if (extension!=='mp3' || (file.type && !['audio/mpeg','audio/mp3','audio/x-mpeg-3',''].includes(file.type))) {
+                throw new Error('Only MP3 files can be added as new beats. Upload WAV files using that beat’s WAV upload control.');
             }
-            saveCart();
-            updateCartCount();
-        }
-        window.addToCart = addToCart;
+            const safeName=file.name.normalize('NFKD').replace(/[^a-zA-Z0-9._-]+/g,'-');
+            const path=`audio/${crypto.randomUUID()}-${safeName}`;
+            const {error:storageError}=await supabaseClient.storage.from('beats').upload(path,file,{
+                cacheControl:'3600',upsert:false,contentType:'audio/mpeg'
+            });
+            if (storageError) throw storageError;
 
-        function changeCartLicense(id, licenseType) {
-            if (!LICENSE_PRICES[licenseType]) return;
-            const item = cartBeatIds.find(entry => String(entry.beatId) === String(id));
-            if (item) { item.licenseType = licenseType; saveCart(); renderCart(); }
-        }
-
-        function renderCart() {
-            const container = document.getElementById('cart-items');
-            const validBeats = cartBeatIds.map(item => ({
-                item,
-                beat: allBeats.find(b => String(b.id) === String(item.beatId))
-            })).filter(entry => entry.beat && !entry.beat.is_exclusive_sold && !entry.beat.is_hidden);
-            cartBeatIds = validBeats.map(entry => entry.item);
-            saveCart();
-            updateCartCount();
-            if (!validBeats.length) {
-                container.innerHTML = '<p class="text-center text-gray-500 py-8 text-sm">Your cart is empty. Add a beat to get started.</p>';
-            } else {
-                container.innerHTML = validBeats.map(({ item, beat }) => `
-                    <div class="bg-black border border-gray-900 rounded-xl p-3 space-y-3">
-                        <div class="flex items-center justify-between gap-3"><div class="min-w-0"><p class="text-sm font-bold text-white truncate">${escapeHtml(beat.title)}</p><p class="text-xs text-gray-500 mt-1">${escapeHtml(beat.bpm || '')}</p></div><button onclick="removeFromCart(${JSON.stringify(beat.id)})" class="text-gray-500 hover:text-red-400 shrink-0" aria-label="Remove ${escapeHtml(beat.title)}"><i class="fa-solid fa-trash"></i></button></div>
-                        <div class="flex items-center justify-between gap-3"><select aria-label="License for ${escapeHtml(beat.title)}" onchange="changeCartLicense(${JSON.stringify(beat.id)}, this.value)" class="min-w-0 flex-1 bg-gray-950 border border-gray-800 rounded-lg px-3 py-2 text-xs text-white"><option value="mp3" ${item.licenseType === 'mp3' ? 'selected' : ''}>MP3 Lease — $25</option><option value="wav" ${item.licenseType === 'wav' ? 'selected' : ''}>WAV Trackout — $50</option><option value="unlimited" ${item.licenseType === 'unlimited' ? 'selected' : ''}>Unlimited Exclusive — $100</option></select><strong class="text-sm text-white shrink-0">$${LICENSE_PRICES[item.licenseType].toFixed(2)}</strong></div>
-                    </div>`).join('');
+            const meta=parseBeatFilename(file.name);
+            const {error:rowError}=await supabaseClient.from('beats').insert({
+                title:meta.title,bpm:meta.bpm,tags:meta.tags,audio_path:path,price:25,is_hidden:false
+            });
+            if (rowError) {
+                await supabaseClient.storage.from('beats').remove([path]);
+                throw rowError;
             }
-            const total = validBeats.reduce((sum, entry) => sum + LICENSE_PRICES[entry.item.licenseType], 0);
-            document.getElementById('cart-total').innerText = `$${total.toFixed(2)}`;
-            document.getElementById('cart-checkout-button').disabled = validBeats.length === 0;
+            uploaded++;
+        } catch(err) {
+            failures.push(`${file.name}: ${err.message||err}`);
         }
+    }
 
-        function toggleCart() {
-            renderCart();
-            const modal = document.getElementById('cart-modal');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        }
+    input.disabled=false;
+    input.value='';
+    await loadOwnerBeats();
+    renderOwnerItems(document.getElementById('owner-search-input').value);
+    if (failures.length) {
+        alert(`Uploaded ${uploaded} of ${files.length} files.\n\nFailed:\n${failures.slice(0,8).join('\n')}${failures.length>8?'\n…and more.':''}`);
+    } else {
+        alert(`Successfully uploaded ${uploaded} MP3 beat file(s) to OUTTAMND.`);
+    }
+}
 
-        function closeCart() {
-            const modal = document.getElementById('cart-modal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        }
+async function hideBeat(id) {
+    try {
+        await requireOwner();
+        const beat=allBeats.find(b=>String(b.id)===String(id));
+        if (!beat || beat.is_exclusive_sold) throw new Error('This beat cannot be modified.');
+        const {error}=await supabaseClient.from('beats').update({is_hidden:true})
+            .eq('id',id).eq('is_exclusive_sold',false);
+        if (error) throw error;
+        await loadOwnerBeats();
+        renderOwnerItems(document.getElementById('owner-search-input').value);
+    } catch(error) { alert('Could not hide beat: '+error.message); }
+}
 
-        function removeFromCart(id) {
-            cartBeatIds = cartBeatIds.filter(item => String(item.beatId) !== String(id));
-            saveCart();
-            renderCart();
-        }
+async function restoreBeat(id) {
+    try {
+        await requireOwner();
+        const beat=allBeats.find(b=>String(b.id)===String(id));
+        if (!beat || beat.is_exclusive_sold) throw new Error('This beat has been exclusively sold and cannot be restored.');
+        const {error}=await supabaseClient.from('beats').update({is_hidden:false})
+            .eq('id',id).eq('is_exclusive_sold',false);
+        if (error) throw error;
+        await loadOwnerBeats();
+        renderOwnerItems(document.getElementById('owner-search-input').value);
+    } catch(error) { alert('Could not restore beat: '+error.message); }
+}
 
-        function clearCart() {
-            cartBeatIds = [];
-            saveCart();
-            renderCart();
-        }
+window.addEventListener('keydown',e=>{
+    if (e.ctrlKey&&e.shiftKey&&e.key.toLowerCase()==='a') {
+        e.preventDefault();
+        openOwnerModal();
+    }
+});
 
-        async function checkoutCart() {
-            if (!cartBeatIds.length) return;
-            await startStripeCheckout([...cartBeatIds]);
-        }
+/* Cart */
+try {
+    const savedCart=JSON.parse(localStorage.getItem('outtamnd_cart')||'[]');
+    cartBeatIds=Array.isArray(savedCart)?savedCart.map(item=>{
+        if (typeof item==='string') return {beatId:item,licenseType:'mp3'};
+        if (item&&(item.beatId||item.id)) return {
+            beatId:item.beatId||item.id,
+            licenseType:LICENSE_PRICES[item.licenseType]?item.licenseType:'mp3'
+        };
+        return null;
+    }).filter(Boolean):[];
+} catch(error) {
+    cartBeatIds=[];
+    localStorage.removeItem('outtamnd_cart');
+}
 
-        async function startStripeCheckout(items) {
-            const selected = items.map(item => ({
-                beatId: item.beatId,
-                licenseType: item.licenseType
-            }));
-            if (!selected.length || selected.some(item => !allBeats.some(b => String(b.id) === String(item.beatId)))) {
-                alert('One or more beats could not be found. Please refresh the page and try again.');
-                return;
-            }
+function saveCart() {
+    try { localStorage.setItem('outtamnd_cart',JSON.stringify(cartBeatIds)); }
+    catch(error) { console.warn('Could not save cart:',error); }
+}
+function updateCartCount() {
+    const count=document.getElementById('cart-count');
+    if (count) count.innerText=cartBeatIds.length;
+}
+function openLicenseChooser(id) {
+    const beat=allBeats.find(b=>String(b.id)===String(id));
+    if (!beat) { alert('That beat is not loaded yet. Refresh the page and try again.'); return; }
+    choosingBeatId=beat.id;
+    document.getElementById('license-chooser-beat').innerText=beat.title;
+    const modal=document.getElementById('license-chooser-modal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+}
+function closeLicenseChooser() {
+    const modal=document.getElementById('license-chooser-modal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    choosingBeatId=null;
+}
+function chooseLicense(type) {
+    if (!choosingBeatId||!LICENSE_PRICES[type]) return;
+    addToCart(choosingBeatId,type);
+    closeLicenseChooser();
+    renderCart();
+}
+function addToCart(id,type='mp3') {
+    const beat=allBeats.find(b=>String(b.id)===String(id));
+    if (!beat) { alert('That beat is not loaded yet. Refresh the page and try again.'); return; }
+    if (beat.is_exclusive_sold||beat.is_hidden) { alert('This beat is no longer available.'); return; }
+    const existing=cartBeatIds.find(item=>String(item.beatId)===String(beat.id));
+    if (existing) {
+        existing.licenseType=type;
+        alert(`${beat.title} is already in your cart. Its license has been changed to ${LICENSE_LABELS[type]}.`);
+    } else cartBeatIds.push({beatId:beat.id,licenseType:type});
+    saveCart();
+    updateCartCount();
+}
+window.addToCart=addToCart;
 
-            const checkoutButton = document.getElementById('cart-checkout-button');
-            if (checkoutButton) { checkoutButton.disabled = true; checkoutButton.innerText = 'Preparing checkout…'; }
-            try {
-                const { data, error } = await supabaseClient.functions.invoke(
-                    'create-checkout-session',
-                    { body: { items: selected } }
-                );
-                if (error) throw error;
-                if (!data || !data.url) throw new Error(data && data.error ? data.error : 'Stripe did not return a checkout link.');
-                window.location.assign(data.url);
-            } catch (error) {
-                console.error('Stripe checkout error:', error);
-                alert('Could not start checkout: ' + (error.message || 'Unknown error') + '\nPlease try again.');
-                if (checkoutButton) { checkoutButton.disabled = false; checkoutButton.innerText = 'Checkout'; }
-            }
-        }
+function changeCartLicense(id,type) {
+    if (!LICENSE_PRICES[type]) return;
+    const item=cartBeatIds.find(entry=>String(entry.beatId)===String(id));
+    if (item) { item.licenseType=type; saveCart(); renderCart(); }
+}
+function renderCart() {
+    const container=document.getElementById('cart-items');
+    const valid=cartBeatIds.map(item=>({
+        item,beat:allBeats.find(b=>String(b.id)===String(item.beatId))
+    })).filter(e=>e.beat&&!e.beat.is_exclusive_sold&&!e.beat.is_hidden);
+    cartBeatIds=valid.map(e=>e.item);
+    saveCart();
+    updateCartCount();
 
-        function checkoutBeat(beatId) {
-            openLicenseChooser(beatId);
-        }
+    if (!valid.length) {
+        container.innerHTML='<p class="text-center text-gray-500 py-8 text-sm">Your cart is empty. Add a beat to get started.</p>';
+    } else {
+        container.innerHTML=valid.map(({item,beat})=>`
+            <div class="bg-black border border-gray-900 rounded-xl p-3 space-y-3">
+                <div class="flex items-center justify-between gap-3">
+                    <div class="min-w-0"><p class="text-sm font-bold text-white truncate">${escapeHtml(beat.title)}</p><p class="text-xs text-gray-500 mt-1">${escapeHtml(beat.bpm||'')}</p></div>
+                    <button onclick="removeFromCart(${JSON.stringify(beat.id)})" class="text-gray-500 hover:text-red-400 shrink-0" aria-label="Remove ${escapeHtml(beat.title)}"><i class="fa-solid fa-trash"></i></button>
+                </div>
+                <div class="flex items-center justify-between gap-3">
+                    <select aria-label="License for ${escapeHtml(beat.title)}" onchange="changeCartLicense(${JSON.stringify(beat.id)},this.value)" class="min-w-0 flex-1 bg-gray-950 border border-gray-800 rounded-lg px-3 py-2 text-xs text-white">
+                        <option value="mp3" ${item.licenseType==='mp3'?'selected':''}>MP3 Lease — $25</option>
+                        <option value="wav" ${item.licenseType==='wav'?'selected':''}>WAV Trackout — $50</option>
+                        <option value="unlimited" ${item.licenseType==='unlimited'?'selected':''}>Unlimited Exclusive — $100</option>
+                    </select>
+                    <strong class="text-sm text-white shrink-0">$${LICENSE_PRICES[item.licenseType].toFixed(2)}</strong>
+                </div>
+            </div>`).join('');
+    }
+    const total=valid.reduce((sum,e)=>sum+LICENSE_PRICES[e.item.licenseType],0);
+    document.getElementById('cart-total').innerText=`$${total.toFixed(2)}`;
+    document.getElementById('cart-checkout-button').disabled=valid.length===0;
+}
+function toggleCart() {
+    renderCart();
+    const modal=document.getElementById('cart-modal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+}
+function closeCart() {
+    const modal=document.getElementById('cart-modal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+}
+function removeFromCart(id) {
+    cartBeatIds=cartBeatIds.filter(item=>String(item.beatId)!==String(id));
+    saveCart();
+    renderCart();
+}
+function clearCart() {
+    cartBeatIds=[];
+    saveCart();
+    renderCart();
+}
+async function checkoutCart() {
+    if (!cartBeatIds.length) return;
+    await startStripeCheckout([...cartBeatIds]);
+}
+async function startStripeCheckout(items) {
+    const selected=items.map(item=>({beatId:item.beatId,licenseType:item.licenseType}));
+    if (!selected.length||selected.some(item=>!allBeats.some(b=>String(b.id)===String(item.beatId)&&!b.is_hidden&&!b.is_exclusive_sold))) {
+        alert('One or more beats could not be found or are no longer available. Please refresh the page and try again.');
+        return;
+    }
+    const button=document.getElementById('cart-checkout-button');
+    if (button) { button.disabled=true; button.innerText='Preparing checkout…'; }
+    try {
+        const {data,error}=await supabaseClient.functions.invoke('create-checkout-session',{body:{items:selected}});
+        if (error) throw error;
+        if (!data||!data.url) throw new Error(data&&data.error?data.error:'Stripe did not return a checkout link.');
+        window.location.assign(data.url);
+    } catch(error) {
+        console.error('Stripe checkout error:',error);
+        alert('Could not start checkout: '+(error.message||'Unknown error')+'\nPlease try again.');
+        if (button) { button.disabled=false; button.innerText='Checkout'; }
+    }
+}
+function checkoutBeat(beatId) { openLicenseChooser(beatId); }
+function openLicenseModalFromPlayer() {
+    if (currentTrack) openLicenseChooser(currentTrack.id);
+    else alert('Select a track first!');
+}
 
-        function openLicenseModalFromPlayer() {
-            if (currentTrack) openLicenseChooser(currentTrack.id);
-            else alert('Select a track first!');
-        }
-
-        window.onload = async () => { updateCartCount(); await initCatalog(); }; 
-    </script>
+window.onload=async()=>{
+    updateCartCount();
+    await initCatalog();
+};
+</script>
 </body>
 </html>
