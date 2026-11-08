@@ -132,12 +132,13 @@
                     </ul>
                 </div>
                 <div class="glass-card p-6 rounded-2xl space-y-4">
-                    <h3 class="text-xl font-extrabold font-syne text-green-400 uppercase">Unlimited Rights</h3>
-                    <p class="text-3xl font-black text-white">$150.00</p>
+                    <h3 class="text-xl font-extrabold font-syne text-green-400 uppercase">Unlimited Exclusive</h3>
+                    <p class="text-3xl font-black text-white">$100.00</p>
                     <ul class="text-xs text-gray-400 space-y-2">
-                        <li><i class="fa-solid fa-check text-green-400 mr-2"></i> Unlimited Streams & Radioplay</li>
+                        <li><i class="fa-solid fa-check text-green-400 mr-2"></i> Unlimited commercial use & streams</li>
                         <li><i class="fa-solid fa-check text-green-400 mr-2"></i> Full Stems + Trackout</li>
-                        <li><i class="fa-solid fa-check text-green-400 mr-2"></i> Commercial Royalty Share</li>
+                        <li><i class="fa-solid fa-check text-green-400 mr-2"></i> Exclusive license — one buyer only</li>
+                        <li><i class="fa-solid fa-check text-green-400 mr-2"></i> Producer retains copyright</li>
                     </ul>
                 </div>
             </div>
@@ -209,8 +210,24 @@
                     <input type="range" min="0" max="1" step="0.05" value="0.8" oninput="handleVolume(this.value)" class="w-20 h-1 bg-gray-900 rounded-lg appearance-none cursor-pointer accent-green-400">
                 </div>
                 <button onclick="openLicenseModalFromPlayer()" class="bg-green-500 hover:bg-green-400 text-black font-extrabold text-xs uppercase tracking-wider px-6 py-2.5 rounded-xl shadow-lg shadow-green-500/30 transition hover:scale-105">
-                    Buy $25.00+
+                    Choose License
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- LICENSE CHOOSER MODAL -->
+    <div id="license-chooser-modal" class="fixed inset-0 z-[70] bg-black/90 backdrop-blur-md hidden items-center justify-center p-4">
+        <div class="bg-gray-950 border border-green-900/40 w-full max-w-md rounded-2xl overflow-hidden shadow-2xl">
+            <div class="p-5 border-b border-gray-900 flex items-center justify-between">
+                <div class="min-w-0"><h2 class="text-lg font-extrabold text-white uppercase">Choose a License</h2><p id="license-chooser-beat" class="text-xs text-gray-500 mt-1 truncate"></p></div>
+                <button onclick="closeLicenseChooser()" class="text-gray-400 hover:text-white text-xl" aria-label="Close license chooser"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-5 space-y-3">
+                <button onclick="chooseLicense('mp3')" class="w-full text-left p-4 rounded-xl border border-gray-800 hover:border-green-500 bg-black transition"><span class="flex justify-between items-center"><strong class="text-white">MP3 Lease</strong><strong class="text-green-400">$25</strong></span><span class="block text-xs text-gray-500 mt-1">Non-exclusive · MP3 file</span></button>
+                <button onclick="chooseLicense('wav')" class="w-full text-left p-4 rounded-xl border border-gray-800 hover:border-green-500 bg-black transition"><span class="flex justify-between items-center"><strong class="text-white">WAV Trackout</strong><strong class="text-green-400">$50</strong></span><span class="block text-xs text-gray-500 mt-1">Non-exclusive · WAV and trackout</span></button>
+                <button onclick="chooseLicense('unlimited')" class="w-full text-left p-4 rounded-xl border border-green-700/60 hover:border-green-400 bg-green-950/20 transition"><span class="flex justify-between items-center"><strong class="text-white">Unlimited Exclusive</strong><strong class="text-green-400">$100</strong></span><span class="block text-xs text-gray-400 mt-1">Exclusive license · one buyer · copyright remains with OUTTAMND</span></button>
+                <p class="text-[11px] text-gray-500 leading-relaxed">An exclusive purchase prevents future sales of this beat. Any earlier non-exclusive licenses remain valid.</p>
             </div>
         </div>
     </div>
@@ -304,7 +321,7 @@
 
         async function loadBeats() {
             const { data, error } = await supabaseClient
-                .from('beats').select('*').eq('is_hidden', false).order('created_at', { ascending: false });
+                .from('beats').select('*').eq('is_hidden', false).eq('is_exclusive_sold', false).order('created_at', { ascending: false });
             if (error) throw error;
             allBeats = (data || []).map(b => ({
                 ...b,
@@ -336,7 +353,7 @@
 
         function renderBeats() {
             const container = document.getElementById('beats-container');
-            const activeBeats = allBeats.filter(b => !b.is_hidden);
+            const activeBeats = allBeats.filter(b => !b.is_hidden && !b.is_exclusive_sold);
             
             const filtered = activeBeats.filter(b => {
                 const matchesSearch = b.title.toLowerCase().includes(searchQuery.toLowerCase()) || b.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -375,7 +392,7 @@
                         </div>
                     </div>
                     <div class="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto sm:shrink-0">
-                        <span class="font-black text-white text-sm">$25.00+</span>
+                        <span class="font-black text-white text-sm">From $25</span>
                         <button type="button" data-add-to-cart="${escapeHtml(beat.id)}" class="bg-green-500/10 hover:bg-green-500 border border-green-500/30 hover:border-green-500 text-green-400 hover:text-black font-extrabold text-xs uppercase tracking-wider px-4 sm:px-5 py-2.5 rounded-xl transition">
                             <i class="fa-solid fa-cart-plus mr-1.5"></i> Add to Cart
                         </button>
@@ -392,7 +409,7 @@
             if (addButton) {
                 event.preventDefault();
                 event.stopPropagation();
-                addToCart(addButton.dataset.addToCart, addButton);
+                openLicenseChooser(addButton.dataset.addToCart);
                 return;
             }
             const playButton = event.target.closest('[data-play-beat]');
@@ -453,7 +470,7 @@
 
         function playNextTrack() {
             if (!currentTrack) return;
-            const activeBeats = allBeats.filter(b => !b.is_hidden);
+            const activeBeats = allBeats.filter(b => !b.is_hidden && !b.is_exclusive_sold);
             const idx = activeBeats.findIndex(b => b.id === currentTrack.id);
             if (idx !== -1 && idx < activeBeats.length - 1) playBeat(activeBeats[idx + 1].id);
             else if (activeBeats.length > 0) playBeat(activeBeats[0].id);
@@ -461,7 +478,7 @@
 
         function playPrevTrack() {
             if (!currentTrack) return;
-            const activeBeats = allBeats.filter(b => !b.is_hidden);
+            const activeBeats = allBeats.filter(b => !b.is_hidden && !b.is_exclusive_sold);
             const idx = activeBeats.findIndex(b => b.id === currentTrack.id);
             if (idx > 0) playBeat(activeBeats[idx - 1].id);
             else if (activeBeats.length > 0) playBeat(activeBeats[activeBeats.length - 1].id);
@@ -675,11 +692,18 @@
             if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'a') { e.preventDefault(); openOwnerModal(); }
         });
 
-        // Restore the cart safely; a malformed or old browser-storage value must not break the page.
+        // Restore cart entries. Older saved carts containing only beat IDs are migrated to MP3 Lease.
+        const LICENSE_PRICES = { mp3: 25, wav: 50, unlimited: 100 };
+        const LICENSE_LABELS = { mp3: 'MP3 Lease', wav: 'WAV Trackout', unlimited: 'Unlimited Exclusive' };
         let cartBeatIds = [];
+        let choosingBeatId = null;
         try {
             const savedCart = JSON.parse(localStorage.getItem('outtamnd_cart') || '[]');
-            cartBeatIds = Array.isArray(savedCart) ? savedCart : [];
+            cartBeatIds = Array.isArray(savedCart) ? savedCart.map(item => {
+                if (typeof item === 'string') return { beatId: item, licenseType: 'mp3' };
+                if (item && (item.beatId || item.id)) return { beatId: item.beatId || item.id, licenseType: LICENSE_PRICES[item.licenseType] ? item.licenseType : 'mp3' };
+                return null;
+            }).filter(Boolean) : [];
         } catch (error) {
             cartBeatIds = [];
             localStorage.removeItem('outtamnd_cart');
@@ -695,50 +719,70 @@
             if (count) count.innerText = cartBeatIds.length;
         }
 
-        function addToCart(id, clickedButton = null) {
+        function openLicenseChooser(id) {
             const beat = allBeats.find(b => String(b.id) === String(id));
-            if (!beat) {
-                alert('That beat is not loaded yet. Refresh the page and try again.');
-                return;
+            if (!beat) { alert('That beat is not loaded yet. Refresh the page and try again.'); return; }
+            choosingBeatId = beat.id;
+            document.getElementById('license-chooser-beat').innerText = beat.title;
+            const modal = document.getElementById('license-chooser-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeLicenseChooser() {
+            const modal = document.getElementById('license-chooser-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            choosingBeatId = null;
+        }
+
+        function chooseLicense(licenseType) {
+            if (!choosingBeatId || !LICENSE_PRICES[licenseType]) return;
+            addToCart(choosingBeatId, licenseType);
+            closeLicenseChooser();
+            renderCart();
+        }
+
+        function addToCart(id, licenseType = 'mp3') {
+            const beat = allBeats.find(b => String(b.id) === String(id));
+            if (!beat) { alert('That beat is not loaded yet. Refresh the page and try again.'); return; }
+            const existing = cartBeatIds.find(item => String(item.beatId) === String(beat.id));
+            if (existing) {
+                existing.licenseType = licenseType;
+                alert(`${beat.title} is already in your cart. Its license has been changed to ${LICENSE_LABELS[licenseType]}.`);
+            } else {
+                cartBeatIds.push({ beatId: beat.id, licenseType });
             }
-            if (cartBeatIds.some(existing => String(existing) === String(beat.id))) {
-                alert('That beat is already in your cart.');
-                return;
-            }
-            cartBeatIds.push(beat.id);
             saveCart();
             updateCartCount();
-            if (clickedButton) {
-                const original = clickedButton.innerHTML;
-                clickedButton.innerHTML = '<i class="fa-solid fa-check mr-1.5"></i> Added';
-                clickedButton.disabled = true;
-                setTimeout(() => {
-                    if (clickedButton.isConnected) {
-                        clickedButton.innerHTML = original;
-                        clickedButton.disabled = false;
-                    }
-                }, 1000);
-            }
         }
-        // Expose the handler for compatibility with any cached older card markup.
         window.addToCart = addToCart;
+
+        function changeCartLicense(id, licenseType) {
+            if (!LICENSE_PRICES[licenseType]) return;
+            const item = cartBeatIds.find(entry => String(entry.beatId) === String(id));
+            if (item) { item.licenseType = licenseType; saveCart(); renderCart(); }
+        }
 
         function renderCart() {
             const container = document.getElementById('cart-items');
-            const validBeats = cartBeatIds.map(id => allBeats.find(b => String(b.id) === String(id))).filter(Boolean);
-            cartBeatIds = validBeats.map(b => b.id);
+            const validBeats = cartBeatIds.map(item => ({
+                item,
+                beat: allBeats.find(b => String(b.id) === String(item.beatId))
+            })).filter(entry => entry.beat && !entry.beat.is_exclusive_sold && !entry.beat.is_hidden);
+            cartBeatIds = validBeats.map(entry => entry.item);
             saveCart();
             updateCartCount();
             if (!validBeats.length) {
                 container.innerHTML = '<p class="text-center text-gray-500 py-8 text-sm">Your cart is empty. Add a beat to get started.</p>';
             } else {
-                container.innerHTML = validBeats.map(beat => `
-                    <div class="flex items-center justify-between gap-3 bg-black border border-gray-900 rounded-xl p-3">
-                        <div class="min-w-0"><p class="text-sm font-bold text-white truncate">${escapeHtml(beat.title)}</p><p class="text-xs text-gray-500 mt-1">${escapeHtml(beat.bpm || '')} · MP3 Lease</p></div>
-                        <div class="flex items-center gap-3 shrink-0"><strong class="text-sm text-white">$${Number(beat.price ?? 25).toFixed(2)}</strong><button onclick="removeFromCart(${JSON.stringify(beat.id)})" class="text-gray-500 hover:text-red-400" aria-label="Remove ${escapeHtml(beat.title)}"><i class="fa-solid fa-trash"></i></button></div>
+                container.innerHTML = validBeats.map(({ item, beat }) => `
+                    <div class="bg-black border border-gray-900 rounded-xl p-3 space-y-3">
+                        <div class="flex items-center justify-between gap-3"><div class="min-w-0"><p class="text-sm font-bold text-white truncate">${escapeHtml(beat.title)}</p><p class="text-xs text-gray-500 mt-1">${escapeHtml(beat.bpm || '')}</p></div><button onclick="removeFromCart(${JSON.stringify(beat.id)})" class="text-gray-500 hover:text-red-400 shrink-0" aria-label="Remove ${escapeHtml(beat.title)}"><i class="fa-solid fa-trash"></i></button></div>
+                        <div class="flex items-center justify-between gap-3"><select aria-label="License for ${escapeHtml(beat.title)}" onchange="changeCartLicense(${JSON.stringify(beat.id)}, this.value)" class="min-w-0 flex-1 bg-gray-950 border border-gray-800 rounded-lg px-3 py-2 text-xs text-white"><option value="mp3" ${item.licenseType === 'mp3' ? 'selected' : ''}>MP3 Lease — $25</option><option value="wav" ${item.licenseType === 'wav' ? 'selected' : ''}>WAV Trackout — $50</option><option value="unlimited" ${item.licenseType === 'unlimited' ? 'selected' : ''}>Unlimited Exclusive — $100</option></select><strong class="text-sm text-white shrink-0">$${LICENSE_PRICES[item.licenseType].toFixed(2)}</strong></div>
                     </div>`).join('');
             }
-            const total = validBeats.reduce((sum, beat) => sum + Number(beat.price ?? 25), 0);
+            const total = validBeats.reduce((sum, entry) => sum + LICENSE_PRICES[entry.item.licenseType], 0);
             document.getElementById('cart-total').innerText = `$${total.toFixed(2)}`;
             document.getElementById('cart-checkout-button').disabled = validBeats.length === 0;
         }
@@ -757,7 +801,7 @@
         }
 
         function removeFromCart(id) {
-            cartBeatIds = cartBeatIds.filter(existing => String(existing) !== String(id));
+            cartBeatIds = cartBeatIds.filter(item => String(item.beatId) !== String(id));
             saveCart();
             renderCart();
         }
@@ -770,45 +814,43 @@
 
         async function checkoutCart() {
             if (!cartBeatIds.length) return;
-            await startStripeCheckout(null, [...cartBeatIds]);
+            await startStripeCheckout([...cartBeatIds]);
         }
 
-        async function startStripeCheckout(beatId, beatIds = null) {
-            const ids = beatIds || [beatId];
-            const selected = ids.map(id => allBeats.find(b => String(b.id) === String(id))).filter(Boolean);
-            if (!selected.length || selected.length !== ids.length) {
+        async function startStripeCheckout(items) {
+            const selected = items.map(item => ({
+                beatId: item.beatId,
+                licenseType: item.licenseType
+            }));
+            if (!selected.length || selected.some(item => !allBeats.some(b => String(b.id) === String(item.beatId)))) {
                 alert('One or more beats could not be found. Please refresh the page and try again.');
                 return;
             }
 
+            const checkoutButton = document.getElementById('cart-checkout-button');
+            if (checkoutButton) { checkoutButton.disabled = true; checkoutButton.innerText = 'Preparing checkout…'; }
             try {
                 const { data, error } = await supabaseClient.functions.invoke(
                     'create-checkout-session',
-                    { body: beatIds ? { beatIds: selected.map(b => b.id) } : { beatId: selected[0].id } }
+                    { body: { items: selected } }
                 );
-
                 if (error) throw error;
-                if (!data || !data.url) {
-                    throw new Error(data && data.error ? data.error : 'Stripe did not return a checkout link.');
-                }
-
+                if (!data || !data.url) throw new Error(data && data.error ? data.error : 'Stripe did not return a checkout link.');
                 window.location.assign(data.url);
             } catch (error) {
                 console.error('Stripe checkout error:', error);
                 alert('Could not start checkout: ' + (error.message || 'Unknown error') + '\nPlease try again.');
+                if (checkoutButton) { checkoutButton.disabled = false; checkoutButton.innerText = 'Checkout'; }
             }
         }
 
         function checkoutBeat(beatId) {
-            startStripeCheckout(beatId);
+            openLicenseChooser(beatId);
         }
 
         function openLicenseModalFromPlayer() {
-            if (currentTrack) {
-                startStripeCheckout(currentTrack.id);
-            } else {
-                alert('Select a track first!');
-            }
+            if (currentTrack) openLicenseChooser(currentTrack.id);
+            else alert('Select a track first!');
         }
 
         window.onload = async () => { updateCartCount(); await initCatalog(); }; 
