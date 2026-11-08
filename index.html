@@ -304,11 +304,12 @@
             clean = clean.replace(/[\_\-\+]+/g, ' ').trim();
             if (!clean || clean.length < 2) clean = "untitled beat";
 
+            // Streams directly from your GitHub pages old-site repository path or your audio root
             return {
                 title: clean.toLowerCase(),
                 bpm: bpm + ' BPM',
                 tags: tags.map(t => t.toUpperCase()),
-                url: `audio/${filename}`
+                url: `https://outtamnd.github.io/old-site/audio/${encodeURIComponent(filename)}`
             };
         }
 
@@ -335,12 +336,13 @@
                             if (typeof item === 'string') {
                                 return { id: idx, ...parseBeatFilename(item) };
                             }
+                            let filename = item.file || item.url || item.audio || `${item.title}.mp3`;
                             return {
                                 id: item.id !== undefined ? parseInt(item.id) : idx,
                                 title: (item.title || item.file || "untitled beat").toLowerCase(),
                                 bpm: (item.bpm ? item.bpm + ' BPM' : '140 BPM'),
                                 tags: [item.genre ? item.genre.toUpperCase() : 'TRAP'],
-                                url: item.file ? (item.file.startsWith('audio/') ? item.file : `audio/${item.file}`) : (item.url || item.audio || `audio/${item.title}.mp3`)
+                                url: filename.startsWith('http') ? filename : `https://outtamnd.github.io/old-site/audio/${encodeURIComponent(filename.replace(/^audio\//, ''))}`
                             };
                         });
                     }
@@ -595,7 +597,6 @@
             }
         }
 
-        // SAFE CHUNKED BATCH UPLOADER: Prevents browser lockups when importing 600+ tracks
         function handleSafeBatchUpload(event) {
             const files = event.target.files;
             if (!files || files.length === 0) return;
