@@ -382,7 +382,7 @@
                     </div>
                     <div class="flex items-center gap-4 shrink-0">
                         <span class="font-black text-white text-sm hidden sm:inline">$25.00+</span>
-                        <button onclick="addToCart(${JSON.stringify(beat.id)})" class="bg-green-500/10 hover:bg-green-500 border border-green-500/30 hover:border-green-500 text-green-400 hover:text-black font-extrabold text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl transition">
+                        <button type="button" data-add-to-cart="${escapeHtml(beat.id)}" class="bg-green-500/10 hover:bg-green-500 border border-green-500/30 hover:border-green-500 text-green-400 hover:text-black font-extrabold text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl transition">
                             <i class="fa-solid fa-cart-plus mr-1.5"></i> Add to Cart
                         </button>
                     </div>
@@ -392,11 +392,17 @@
             renderPagination(totalPages);
         }
 
-        // Use delegated clicks so beat buttons work even after the catalog is re-rendered.
+        // Delegated clicks keep both controls working after the catalog is re-rendered.
         document.getElementById('beats-container').addEventListener('click', (event) => {
-            const button = event.target.closest('[data-play-beat]');
-            if (!button) return;
-            playBeat(button.dataset.playBeat);
+            const addButton = event.target.closest('[data-add-to-cart]');
+            if (addButton) {
+                event.preventDefault();
+                event.stopPropagation();
+                addToCart(addButton.dataset.addToCart, addButton);
+                return;
+            }
+            const playButton = event.target.closest('[data-play-beat]');
+            if (playButton) playBeat(playButton.dataset.playBeat);
         });
 
         function renderPagination(totalPages) {
@@ -675,36 +681,59 @@
             if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'a') { e.preventDefault(); openOwnerModal(); }
         });
 
-        let cartBeatIds = JSON.parse(localStorage.getItem('outtamnd_cart') || '[]');
+        // Restore the cart safely; a malformed or old browser-storage value must not break the page.
+        let cartBeatIds = [];
+        try {
+            const savedCart = JSON.parse(localStorage.getItem('outtamnd_cart') || '[]');
+            cartBeatIds = Array.isArray(savedCart) ? savedCart : [];
+        } catch (error) {
+            cartBeatIds = [];
+            localStorage.removeItem('outtamnd_cart');
+        }
+
+        function saveCart() {
+            try { localStorage.setItem('outtamnd_cart', JSON.stringify(cartBeatIds)); }
+            catch (error) { console.warn('Could not save cart in this browser:', error); }
+        }
 
         function updateCartCount() {
             const count = document.getElementById('cart-count');
             if (count) count.innerText = cartBeatIds.length;
         }
 
-        function addToCart(id) {
+        function addToCart(id, clickedButton = null) {
             const beat = allBeats.find(b => String(b.id) === String(id));
-            if (!beat) { alert('Could not find that beat. Please refresh and try again.'); return; }
-            if (cartBeatIds.some(existing => String(existing) === String(id))) {
+            if (!beat) {
+                alert('That beat is not loaded yet. Refresh the page and try again.');
+                return;
+            }
+            if (cartBeatIds.some(existing => String(existing) === String(beat.id))) {
                 alert('That beat is already in your cart.');
                 return;
             }
-            cartBeatIds.push(id);
-            localStorage.setItem('outtamnd_cart', JSON.stringify(cartBeatIds));
+            cartBeatIds.push(beat.id);
+            saveCart();
             updateCartCount();
-            const button = document.activeElement;
-            if (button && button.tagName === 'BUTTON') {
-                const old = button.innerHTML;
-                button.innerHTML = '<i class="fa-solid fa-check mr-1.5"></i> Added';
-                setTimeout(() => { if (button.isConnected) button.innerHTML = old; }, 1200);
+            if (clickedButton) {
+                const original = clickedButton.innerHTML;
+                clickedButton.innerHTML = '<i class="fa-solid fa-check mr-1.5"></i> Added';
+                clickedButton.disabled = true;
+                setTimeout(() => {
+                    if (clickedButton.isConnected) {
+                        clickedButton.innerHTML = original;
+                        clickedButton.disabled = false;
+                    }
+                }, 1000);
             }
         }
+        // Expose the handler for compatibility with any cached older card markup.
+        window.addToCart = addToCart;
 
         function renderCart() {
             const container = document.getElementById('cart-items');
             const validBeats = cartBeatIds.map(id => allBeats.find(b => String(b.id) === String(id))).filter(Boolean);
             cartBeatIds = validBeats.map(b => b.id);
-            localStorage.setItem('outtamnd_cart', JSON.stringify(cartBeatIds));
+            saveCart();
             updateCartCount();
             if (!validBeats.length) {
                 container.innerHTML = '<p class="text-center text-gray-500 py-8 text-sm">Your cart is empty. Add a beat to get started.</p>';
@@ -735,13 +764,13 @@
 
         function removeFromCart(id) {
             cartBeatIds = cartBeatIds.filter(existing => String(existing) !== String(id));
-            localStorage.setItem('outtamnd_cart', JSON.stringify(cartBeatIds));
+            saveCart();
             renderCart();
         }
 
         function clearCart() {
             cartBeatIds = [];
-            localStorage.setItem('outtamnd_cart', '[]');
+            saveCart();
             renderCart();
         }
 
