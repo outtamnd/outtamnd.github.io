@@ -277,18 +277,84 @@
         let ownerActiveTab = 'active';
 
         const audioPlayer = new Audio();
+        audioPlayer.preload = 'auto';
+        let currentObjectUrl = null;
+        let audioDbPromise = null;
+
+        // Audio files belong in IndexedDB, not localStorage. localStorage is limited
+        // to a few MB and can silently make large uploads fail to persist.
+        function openAudioDB() {
+            if (audioDbPromise) return audioDbPromise;
+            audioDbPromise = new Promise((resolve, reject) => {
+                const request = indexedDB.open('outtamnd-audio-vault', 1);
+                request.onupgradeneeded = () => {
+                    const db = request.result;
+                    if (!db.objectStoreNames.contains('audio')) {
+                        db.createObjectStore('audio', { keyPath: 'id' });
+                    }
+                };
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error || new Error('Could not open audio database.'));
+            });
+            return audioDbPromise;
+        }
+
+        async function saveAudioBlob(id, blob) {
+            const db = await openAudioDB();
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction('audio', 'readwrite');
+                tx.objectStore('audio').put({ id, blob, type: blob.type || 'audio/mpeg' });
+                tx.oncomplete = resolve;
+                tx.onerror = () => reject(tx.error || new Error('Could not save audio file.'));
+                tx.onabort = () => reject(tx.error || new Error('Audio save was cancelled.'));
+            });
+        }
+
+        async function getAudioBlob(id) {
+            const db = await openAudioDB();
+            return new Promise((resolve, reject) => {
+                const request = db.transaction('audio', 'readonly').objectStore('audio').get(id);
+                request.onsuccess = () => resolve(request.result ? request.result.blob : null);
+                request.onerror = () => reject(request.error || new Error('Could not read audio file.'));
+            });
+        }
+
+        async function migrateLegacyAudio() {
+            // Convert previously embedded Base64 tracks into binary IndexedDB records.
+            let changed = false;
+            for (const beat of allBeats) {
+                if (beat.url && beat.url.startsWith('data:') && !beat.audioId) {
+                    const response = await fetch(beat.url);
+                    const blob = await response.blob();
+                    const audioId = 'beat-' + beat.id;
+                    await saveAudioBlob(audioId, blob);
+                    beat.audioId = audioId;
+                    beat.audioType = blob.type || 'audio/mpeg';
+                    delete beat.url;
+                    changed = true;
+                }
+            }
+            if (changed) localStorage.setItem('outtamnd_base64_beats', JSON.stringify(allBeats));
+        }
 
         const defaultSampleBeats = [
             { id: 0, title: "test track (click play)", bpm: "140 BPM", tags: ["TRAP"], url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" }
         ];
 
-        function initCatalog() {
-            if (!allBeats || allBeats.length === 0) {
-                allBeats = defaultSampleBeats;
-                localStorage.setItem('outtamnd_base64_beats', JSON.stringify(allBeats));
+        async function initCatalog() {
+            try {
+                if (!allBeats || allBeats.length === 0) {
+                    allBeats = defaultSampleBeats;
+                    localStorage.setItem('outtamnd_base64_beats', JSON.stringify(allBeats));
+                }
+                await openAudioDB();
+                await migrateLegacyAudio();
+                populateGenres();
+                renderBeats();
+            } catch (error) {
+                console.error('Catalog initialization error:', error);
+                alert('The audio vault could not be opened. Please try reloading the page.');
             }
-            populateGenres();
-            renderBeats();
         }
 
         function populateGenres() {
@@ -367,10 +433,10 @@
         function handleSearch(val) { searchQuery = val; currentPage = 1; renderBeats(); }
         function handleGenreFilter(val) { currentGenre = val; currentPage = 1; renderBeats(); }
 
-        function playBeat(id) {
+        async function playBeat(id) {
             const beat = allBeats.find(b => b.id === id);
             if (!beat) return;
-            
+
             if (currentTrack && currentTrack.id === beat.id) {
                 togglePlayPause();
                 return;
@@ -378,16 +444,31 @@
 
             currentTrack = beat;
             isPlaying = true;
-
             document.getElementById('player-title').innerText = beat.title;
             document.getElementById('player-subtitle').innerText = `${beat.bpm} • ${beat.tags.join(', ')}`;
             document.getElementById('play-pause-btn').innerHTML = '<i class="fa-solid fa-pause text-xs"></i>';
-            
-            audioPlayer.src = beat.url;
-            audioPlayer.play().catch(err => {
-                console.log("Audio play error:", err);
-                alert("Playback error. Please ensure the file is a valid MP3.");
-            });
+
+            try {
+                let source = beat.url || '';
+                if (beat.audioId) {
+                    const blob = await getAudioBlob(beat.audioId);
+                    if (!blob || !blob.size) throw new Error('The saved audio data is missing or empty.');
+                    if (currentObjectUrl) URL.revokeObjectURL(currentObjectUrl);
+                    currentObjectUrl = URL.createObjectURL(blob);
+                    source = currentObjectUrl;
+                }
+                if (!source) throw new Error('This beat has no playable audio file.');
+
+                audioPlayer.pause();
+                audioPlayer.src = source;
+                audioPlayer.load();
+                await audioPlayer.play();
+            } catch (err) {
+                console.error('Audio playback error:', err);
+                isPlaying = false;
+                document.getElementById('play-pause-btn').innerHTML = '<i class="fa-solid fa-play text-xs ml-0.5"></i>';
+                alert('Could not play this audio file: ' + (err.message || 'Unsupported or damaged audio format.'));
+            }
         }
 
         function togglePlayPause() {
@@ -434,6 +515,16 @@
         audioPlayer.addEventListener('ended', () => {
             playNextTrack();
         });
+        audioPlayer.addEventListener('error', () => {
+            if (currentTrack) {
+                console.error('Browser audio element error:', audioPlayer.error);
+                isPlaying = false;
+                const button = document.getElementById('play-pause-btn');
+                if (button) button.innerHTML = '<i class="fa-solid fa-play text-xs ml-0.5"></i>';
+            }
+        });
+        audioPlayer.addEventListener('play', () => { isPlaying = true; });
+        audioPlayer.addEventListener('pause', () => { isPlaying = false; });
 
         function formatTime(seconds) {
             const mins = Math.floor(seconds / 60);
@@ -536,40 +627,59 @@
         }
 
         // BASE64 CONVERTER: Turns dropped MP3 files into permanent embedded data strings so they stream instantly without buzzing
-        function handleBase64Upload(event) {
-            const files = event.target.files;
-            if (!files || files.length === 0) return;
+        async function handleBase64Upload(event) {
+            const files = Array.from(event.target.files || []);
+            if (!files.length) return;
 
-            let nextId = allBeats.length > 0 ? Math.max(...allBeats.map(b => b.id)) + 1 : 0;
-            let fileArray = Array.from(files);
-            let processed = 0;
+            const audioFiles = files.filter(file =>
+                file.type.startsWith('audio/') || /\.(mp3|wav|m4a|aac|ogg|flac|aif|aiff)$/i.test(file.name)
+            );
+            if (!audioFiles.length) {
+                alert('Please choose a supported audio file (MP3, WAV, M4A, AAC, OGG, or FLAC).');
+                event.target.value = '';
+                return;
+            }
 
-            fileArray.forEach(file => {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    let base64String = e.target.result; // Permanent data stream
-                    let cleanName = file.name.replace(/\.[^/.]+$/, "").replace(/[\_\-\+]+/g, ' ').toLowerCase();
+            let nextId = allBeats.length ? Math.max(...allBeats.map(b => Number(b.id) || 0)) + 1 : 0;
+            let saved = 0;
 
-                    const newBeat = {
-                        id: nextId++,
+            try {
+                await openAudioDB();
+                for (const file of audioFiles) {
+                    if (!file.size) continue;
+                    const id = nextId++;
+                    const audioId = 'beat-' + id;
+                    // Store the original binary audio. Do not Base64-encode it.
+                    const blob = new Blob([file], { type: file.type || 'audio/mpeg' });
+                    await saveAudioBlob(audioId, blob);
+
+                    const cleanName = file.name
+                        .replace(/\.[^/.]+$/, '')
+                        .replace(/[\_\-\+]+/g, ' ')
+                        .toLowerCase();
+
+                    allBeats.unshift({
+                        id,
                         title: cleanName,
-                        bpm: "140 BPM",
-                        tags: ["TRAP"],
-                        url: base64String
-                    };
-                    allBeats.unshift(newBeat);
-                    processed++;
+                        bpm: '140 BPM',
+                        tags: ['TRAP'],
+                        audioId,
+                        audioType: blob.type
+                    });
+                    saved++;
+                }
 
-                    if (processed === fileArray.length) {
-                        localStorage.setItem('outtamnd_base64_beats', JSON.stringify(allBeats));
-                        populateGenres();
-                        renderBeats();
-                        renderOwnerItems();
-                        alert(`Successfully converted and embedded ${fileArray.length} MP3 files permanently into your vault!`);
-                    }
-                };
-                reader.readAsDataURL(file);
-            });
+                localStorage.setItem('outtamnd_base64_beats', JSON.stringify(allBeats));
+                populateGenres();
+                renderBeats();
+                renderOwnerItems();
+                alert(`Successfully saved ${saved} audio file(s) to your vault.`);
+            } catch (error) {
+                console.error('Audio upload error:', error);
+                alert('Upload could not be saved. Your browser may be low on storage space. Try fewer files at a time.');
+            } finally {
+                event.target.value = '';
+            }
         }
 
         function hideBeat(id) {
