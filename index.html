@@ -324,32 +324,34 @@
         ];
 
         async function initCatalog() {
-            if (!allBeats) {
-                try {
-                    const res = await fetch('my_beats.json?v=' + Date.now());
-                    if (!res.ok) throw new Error('Failed');
-                    const data = await res.json();
-                    
-                    if (Array.isArray(data) && data.length > 0) {
-                        allBeats = data.map((item, idx) => {
-                            if (typeof item === 'string') {
-                                return { id: idx, ...parseBeatFilename(item) };
-                            }
-                            return {
-                                id: item.id !== undefined ? parseInt(item.id) : idx,
-                                title: (item.title || item.file || "untitled beat").toLowerCase(),
-                                bpm: (item.bpm ? item.bpm + ' BPM' : '140 BPM'),
-                                tags: [item.genre ? item.genre.toUpperCase() : 'TRAP'],
-                                url: item.file ? (item.file.startsWith('audio/') ? item.file : `audio/${item.file}`) : (item.url || item.audio || `audio/${item.title}.mp3`)
-                            };
-                        });
-                    }
-                } catch (err) {
-                    console.log("Using fallback catalog due to load error:", err);
-                    allBeats = fallbackVaultFilenames.map((filename, idx) => ({ id: idx, ...parseBeatFilename(filename) }));
+            try {
+                const res = await fetch('my_beats.json?v=' + Date.now());
+                if (!res.ok) throw new Error('HTTP error ' + res.status);
+                const data = await res.json();
+                
+                console.log("Loaded raw JSON data:", data);
+
+                if (Array.isArray(data) && data.length > 0) {
+                    allBeats = data.map((item, idx) => {
+                        if (typeof item === 'string') {
+                            return { id: idx, ...parseBeatFilename(item) };
+                        }
+                        return {
+                            id: item.id !== undefined ? parseInt(item.id) : idx,
+                            title: (item.title || item.file || "untitled beat").toLowerCase(),
+                            bpm: (item.bpm ? item.bpm + ' BPM' : '140 BPM'),
+                            tags: [item.genre ? item.genre.toUpperCase() : 'TRAP'],
+                            url: item.file ? (item.file.startsWith('audio/') ? item.file : `audio/${item.file}`) : (item.url || item.audio || `audio/${item.title}.mp3`)
+                        };
+                    });
                 }
-                localStorage.setItem('outtamnd_custom_beats', JSON.stringify(allBeats));
+            } catch (err) {
+                console.log("JSON fetch failed, using fallback vault:", err);
+                allBeats = fallbackVaultFilenames.map((filename, idx) => ({ id: idx, ...parseBeatFilename(filename) }));
             }
+            
+            localStorage.setItem('outtamnd_custom_beats', JSON.stringify(allBeats));
+            console.log("Total active beats loaded into vault:", allBeats.length);
             populateGenres();
             renderBeats();
         }
