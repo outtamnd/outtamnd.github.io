@@ -116,7 +116,19 @@
 
     <div id="view-kits" class="hidden space-y-6">
         <h1 class="text-3xl font-extrabold font-syne text-white uppercase">Drum Kits & Soundsets</h1>
-        <p class="text-sm text-gray-400">Custom 808s, Roland XV-5080 presets, and Glo loops engineered directly by Outtamnd.</p>
+        <div class="glass-card rounded-2xl p-6 sm:p-8 max-w-xl space-y-4">
+            <div class="flex items-start justify-between gap-4">
+                <div>
+                    <p class="text-[10px] font-bold uppercase tracking-[0.22em] text-green-400 mb-2">OFFICIAL SOUND LIBRARY</p>
+                    <h2 class="text-xl sm:text-2xl font-extrabold font-syne text-white uppercase">OUTTADRUMS V1 OFFICIAL DRUMKIT</h2>
+                    <p class="text-sm text-gray-400 mt-2">Digital drumkit download.</p>
+                </div>
+                <span class="text-xl font-black text-green-400 whitespace-nowrap">$5.00</span>
+            </div>
+            <button type="button" onclick="addDrumkitToCart()" class="w-full bg-green-500 hover:bg-green-400 text-black font-extrabold text-xs uppercase tracking-wider py-3 rounded-xl transition">
+                <i class="fa-solid fa-cart-plus mr-2"></i>Add to Cart
+            </button>
+        </div>
     </div>
 
     <div id="view-licensing" class="hidden space-y-6">
@@ -132,10 +144,10 @@
                 </ul>
             </div>
             <div class="glass-card p-6 rounded-2xl space-y-4 border-green-500/50 glow-green-sm">
-                <h3 class="text-xl font-extrabold font-syne text-green-400 uppercase">WAV Trackout</h3>
+                <h3 class="text-xl font-extrabold font-syne text-green-400 uppercase">MP3 + WAV</h3>
                 <p class="text-3xl font-black text-white">$50.00</p>
                 <ul class="text-xs text-gray-400 space-y-2">
-                    <li><i class="fa-solid fa-check text-green-400 mr-2"></i> High Quality WAV Stems</li>
+                    <li><i class="fa-solid fa-check text-green-400 mr-2"></i> MP3 + WAV files</li>
                     <li><i class="fa-solid fa-check text-green-400 mr-2"></i> 500,000 Online Streams</li>
                     <li><i class="fa-solid fa-check text-green-400 mr-2"></i> Full Performance Rights</li>
                 </ul>
@@ -214,7 +226,7 @@
         </div>
         <div class="p-5 space-y-3">
             <button onclick="chooseLicense('mp3')" class="w-full text-left p-4 rounded-xl border border-gray-800 hover:border-green-500 bg-black transition"><span class="flex justify-between items-center"><strong class="text-white">MP3 Lease</strong><strong class="text-green-400">$25</strong></span><span class="block text-xs text-gray-500 mt-1">Non-exclusive · MP3 file</span></button>
-            <button onclick="chooseLicense('wav')" class="w-full text-left p-4 rounded-xl border border-gray-800 hover:border-green-500 bg-black transition"><span class="flex justify-between items-center"><strong class="text-white">WAV Trackout</strong><strong class="text-green-400">$50</strong></span><span class="block text-xs text-gray-500 mt-1">Non-exclusive · WAV and trackout</span></button>
+            <button onclick="chooseLicense('wav')" class="w-full text-left p-4 rounded-xl border border-gray-800 hover:border-green-500 bg-black transition"><span class="flex justify-between items-center"><strong class="text-white">MP3 + WAV</strong><strong class="text-green-400">$50</strong></span><span class="block text-xs text-gray-500 mt-1">Non-exclusive · MP3 + WAV files</span></button>
             <button onclick="chooseLicense('unlimited')" class="w-full text-left p-4 rounded-xl border border-green-700/60 hover:border-green-400 bg-green-950/20 transition"><span class="flex justify-between items-center"><strong class="text-white">Unlimited Exclusive</strong><strong class="text-green-400">$100</strong></span><span class="block text-xs text-gray-400 mt-1">Exclusive license · one buyer · copyright remains with OUTTAMND</span></button>
             <p class="text-[11px] text-gray-500 leading-relaxed">An exclusive purchase prevents future sales of this beat. Any earlier non-exclusive licenses remain valid.</p>
         </div>
@@ -224,7 +236,7 @@
 <div id="cart-modal" class="fixed inset-0 z-[60] bg-black/90 backdrop-blur-md hidden items-center justify-center p-4">
     <div class="bg-gray-950 border border-green-900/40 w-full max-w-xl rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[85vh]">
         <div class="p-5 border-b border-gray-900 flex items-center justify-between">
-            <div><h2 class="text-lg font-extrabold font-syne text-white uppercase">Your Cart</h2><p class="text-xs text-gray-500 mt-1">Review your beats before checkout</p></div>
+            <div><h2 class="text-lg font-extrabold font-syne text-white uppercase">Your Cart</h2><p class="text-xs text-gray-500 mt-1">Review your items before checkout</p></div>
             <button onclick="closeCart()" class="text-gray-400 hover:text-white text-xl" aria-label="Close cart"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div id="cart-items" class="p-5 space-y-3 overflow-y-auto flex-grow"><p class="text-center text-gray-500 py-8 text-sm">Your cart is empty.</p></div>
@@ -298,7 +310,8 @@ let ownerActiveTab = 'active';
 const audioPlayer = new Audio();
 
 const LICENSE_PRICES = { mp3:25, wav:50, unlimited:100 };
-const LICENSE_LABELS = { mp3:'MP3 Lease', wav:'WAV Trackout', unlimited:'Unlimited Exclusive' };
+const LICENSE_LABELS = { mp3:'MP3 Lease', wav:'WAV License', unlimited:'Unlimited Exclusive' };
+const DRUMKIT_PRODUCT = { id:'outtadrums-v1-official-drumkit', title:'OUTTADRUMS V1 OFFICIAL DRUMKIT', price:5 }; 
 let cartBeatIds = [];
 let choosingBeatId = null;
 let checkoutInProgress = false;
@@ -331,13 +344,14 @@ function initializeSpaceBackground() {
         canvas.height = height * dpr;
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-        const count = Math.min(180, Math.floor(width * height / 6500));
+        const count = Math.min(260, Math.floor(width * height / 4200));
         stars = Array.from({length: count}, () => ({
             x: Math.random() * width,
             y: Math.random() * height,
-            size: Math.random() * 1.5 + 0.25,
+            size: Math.random() * 1.9 + 0.45,
+            green: Math.random() < 0.16,
             speed: Math.random() * 0.35 + 0.08,
-            opacity: Math.random() * 0.65 + 0.2,
+            opacity: Math.random() * 0.8 + 0.25,
             twinkle: Math.random() * Math.PI * 2
         }));
     }
@@ -365,7 +379,9 @@ function initializeSpaceBackground() {
             const pulse = 0.65 + Math.sin(star.twinkle) * 0.35;
             ctx.beginPath();
             ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(255,255,255,${star.opacity * pulse})`;
+            ctx.fillStyle = star.green
+                ? `rgba(74,222,128,${Math.min(1, star.opacity * pulse)})`
+                : `rgba(255,255,255,${Math.min(1, star.opacity * pulse)})`;
             ctx.fill();
 
             if (star.size > 1.15) {
@@ -374,7 +390,9 @@ function initializeSpaceBackground() {
                 ctx.lineTo(star.x + star.size * 2.5, star.y);
                 ctx.moveTo(star.x, star.y - star.size * 2.5);
                 ctx.lineTo(star.x, star.y + star.size * 2.5);
-                ctx.strokeStyle = `rgba(255,255,255,${star.opacity * pulse * 0.35})`;
+                ctx.strokeStyle = star.green
+                    ? `rgba(74,222,128,${star.opacity * pulse * 0.55})`
+                    : `rgba(255,255,255,${star.opacity * pulse * 0.5})`;
                 ctx.lineWidth = 0.5;
                 ctx.stroke();
             }
@@ -1081,6 +1099,7 @@ try {
     const savedCart=JSON.parse(localStorage.getItem('outtamnd_cart')||'[]');
     cartBeatIds=Array.isArray(savedCart)?savedCart.map(item=>{
         if (typeof item==='string') return {beatId:item,licenseType:'mp3'};
+        if (item?.type==='drumkit' || item?.productId===DRUMKIT_PRODUCT.id) return {type:'drumkit',productId:DRUMKIT_PRODUCT.id};
         if (item&&(item.beatId||item.id)) return {
             beatId:item.beatId||item.id,
             licenseType:LICENSE_PRICES[item.licenseType]?item.licenseType:'mp3'
@@ -1101,6 +1120,17 @@ function updateCartCount() {
     const count=document.getElementById('cart-count');
     if (count) count.innerText=cartBeatIds.length;
 }
+
+function addDrumkitToCart() {
+    if (!cartBeatIds.some(item => item.type === 'drumkit')) {
+        cartBeatIds.push({type:'drumkit', productId:DRUMKIT_PRODUCT.id});
+        saveCart();
+        updateCartCount();
+    }
+    renderCart();
+    toggleCart();
+}
+window.addDrumkitToCart=addDrumkitToCart;
 
 function openLicenseChooser(id) {
     const beat=allBeats.find(b=>String(b.id)===String(id));
@@ -1154,50 +1184,50 @@ function changeCartLicense(id,type) {
 
 function renderCart() {
     const container=document.getElementById('cart-items');
-    const valid=cartBeatIds.map(item=>({
+    const kitItems=cartBeatIds.filter(item=>item.type==='drumkit' && item.productId===DRUMKIT_PRODUCT.id);
+    const validBeats=cartBeatIds.filter(item=>!item.type).map(item=>({
         item,beat:allBeats.find(b=>String(b.id)===String(item.beatId))
     })).filter(e=>e.beat&&!e.beat.is_exclusive_sold&&!e.beat.is_hidden);
 
-    cartBeatIds=valid.map(e=>e.item);
+    cartBeatIds=[...validBeats.map(e=>e.item),...(kitItems.length?[{type:'drumkit',productId:DRUMKIT_PRODUCT.id}]:[])];
     saveCart();
     updateCartCount();
 
-    if (!valid.length) {
-        container.innerHTML='<p class="text-center text-gray-500 py-8 text-sm">Your cart is empty. Add a beat to get started.</p>';
+    if (!cartBeatIds.length) {
+        container.innerHTML='<p class="text-center text-gray-500 py-8 text-sm">Your cart is empty. Add a beat or drumkit to get started.</p>';
     } else {
-        container.innerHTML=valid.map(({item,beat})=>`
+        const kitHtml=kitItems.length?`<div class="bg-black border border-green-900/50 rounded-xl p-3 flex items-center justify-between gap-3"><div class="min-w-0"><p class="text-sm font-bold text-white">${DRUMKIT_PRODUCT.title}</p><p class="text-xs text-green-400 mt-1">Digital drumkit download</p></div><div class="flex items-center gap-3"><strong class="text-sm text-white">$5.00</strong><button type="button" onclick="removeDrumkitFromCart()" class="text-gray-500 hover:text-red-400" aria-label="Remove drumkit"><i class="fa-solid fa-trash"></i></button></div></div>`:'';
+        const beatsHtml=validBeats.map(({item,beat})=>`
             <div class="bg-black border border-gray-900 rounded-xl p-3 space-y-3">
                 <div class="flex items-center justify-between gap-3">
-                    <div class="min-w-0">
-                        <p class="text-sm font-bold text-white truncate">${escapeHtml(beat.title)}</p>
-                        <p class="text-xs text-gray-500 mt-1">${escapeHtml(beat.bpm||'')}</p>
-                    </div>
-                    <button
-                        type="button"
-                        onclick="removeFromCart('${escapeHtml(beat.id)}')"
-                        class="text-gray-500 hover:text-red-400 shrink-0"
-                        aria-label="Remove ${escapeHtml(beat.title)}">
-                        <i class="fa-solid fa-trash"></i>
-                    </button>
+                    <div class="min-w-0"><p class="text-sm font-bold text-white truncate">${escapeHtml(beat.title)}</p><p class="text-xs text-gray-500 mt-1">${escapeHtml(beat.bpm||'')}</p></div>
+                    <button type="button" onclick="removeFromCart('${escapeHtml(beat.id)}')" class="text-gray-500 hover:text-red-400 shrink-0" aria-label="Remove ${escapeHtml(beat.title)}"><i class="fa-solid fa-trash"></i></button>
                 </div>
                 <div class="flex items-center justify-between gap-3">
                     <select aria-label="License for ${escapeHtml(beat.title)}" onchange="changeCartLicense('${escapeHtml(beat.id)}',this.value)" class="min-w-0 flex-1 bg-gray-950 border border-gray-800 rounded-lg px-3 py-2 text-xs text-white">
                         <option value="mp3" ${item.licenseType==='mp3'?'selected':''}>MP3 Lease — $25</option>
-                        <option value="wav" ${item.licenseType==='wav'?'selected':''}>WAV Trackout — $50</option>
+                        <option value="wav" ${item.licenseType==='wav'?'selected':''}>MP3 + WAV — $50</option>
                         <option value="unlimited" ${item.licenseType==='unlimited'?'selected':''}>Unlimited Exclusive — $100</option>
                     </select>
                     <strong class="text-sm text-white shrink-0">$${LICENSE_PRICES[item.licenseType].toFixed(2)}</strong>
                 </div>
             </div>`).join('');
+        container.innerHTML=kitHtml+beatsHtml;
     }
 
-    const total=valid.reduce((sum,e)=>sum+LICENSE_PRICES[e.item.licenseType],0);
+    const total=validBeats.reduce((sum,e)=>sum+LICENSE_PRICES[e.item.licenseType],0)+(kitItems.length?DRUMKIT_PRODUCT.price:0);
     document.getElementById('cart-total').innerText=`$${total.toFixed(2)}`;
-
     const checkoutButton=document.getElementById('cart-checkout-button');
-    checkoutButton.disabled=valid.length===0||checkoutInProgress;
+    checkoutButton.disabled=cartBeatIds.length===0||checkoutInProgress;
     checkoutButton.innerText=checkoutInProgress?'Preparing checkout…':'Checkout';
 }
+
+function removeDrumkitFromCart() {
+    cartBeatIds=cartBeatIds.filter(item=>item.type!=='drumkit');
+    saveCart();
+    renderCart();
+}
+window.removeDrumkitFromCart=removeDrumkitFromCart;
 
 function toggleCart() {
     renderCart();
@@ -1213,7 +1243,7 @@ function closeCart() {
 }
 
 function removeFromCart(id) {
-    cartBeatIds=cartBeatIds.filter(item=>String(item.beatId)!==String(id));
+    cartBeatIds=cartBeatIds.filter(item=>item.type==='drumkit'||String(item.beatId)!==String(id));
     saveCart();
     renderCart();
 }
@@ -1232,13 +1262,14 @@ async function checkoutCart() {
 async function startStripeCheckout(items) {
     if (checkoutInProgress) return;
 
-    const selected=items.map(item=>({
+    const includeDrumkit=items.some(item=>item.type==='drumkit' && item.productId===DRUMKIT_PRODUCT.id);
+    const selected=items.filter(item=>!item.type).map(item=>({
         beatId:item.beatId,
         licenseType:item.licenseType
     }));
 
     if (
-        !selected.length ||
+        (!selected.length && !includeDrumkit) ||
         selected.some(item=>
             !allBeats.some(b=>
                 String(b.id)===String(item.beatId)&&
@@ -1263,7 +1294,7 @@ async function startStripeCheckout(items) {
     try {
         const {data,error}=await supabaseClient.functions.invoke(
             'create-checkout-session',
-            {body:{items:selected}}
+            {body:{items:selected, includeDrumkit}}
         );
 
         if (error) throw error;
